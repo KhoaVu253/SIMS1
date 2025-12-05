@@ -1,0 +1,182 @@
+@model SIMS.Models.ViewModels.GradeEntryViewModel
+@{
+    ViewData["Title"] = "Nhập điểm";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-pencil-square"></i> Nhập điểm</h2>
+            <p class="text-muted">@Model.CourseCode - @Model.CourseName</p>
+        </div>
+    </div>
+
+    <form asp-action="EnterGrades" method="post">
+        <input type="hidden" asp-for="CourseId" />
+        <input type="hidden" asp-for="CourseCode" />
+        <input type="hidden" asp-for="CourseName" />
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Bảng nhập điểm</h5>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Lưu điểm
+                    </button>
+                    <a asp-action="MyCourses" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Hủy
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (!Model.Students.Any())
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Chưa có sinh viên đăng ký môn này.
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Cách tính điểm:</strong> Tổng kết = (Giữa kỳ × 40%) + (Cuối kỳ × 60%)
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="50px">#</th>
+                                    <th>Mã SV</th>
+                                    <th>Họ và tên</th>
+                                    <th width="120px" class="text-center">Giữa kỳ</th>
+                                    <th width="120px" class="text-center">Cuối kỳ</th>
+                                    <th width="120px" class="text-center">Tổng kết</th>
+                                    <th width="100px" class="text-center">Điểm chữ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Students.Count; i++)
+                                {
+                                    var student = Model.Students[i];
+                                    <tr>
+                                        <td>@(i + 1)</td>
+                                        <td><strong>@student.StudentCode</strong></td>
+                                        <td>@student.FullName</td>
+                                        <td>
+                                            <input type="hidden" name="Students[@i].EnrollmentId" value="@student.EnrollmentId" />
+                                            <input type="hidden" name="Students[@i].StudentId" value="@student.StudentId" />
+                                            <input type="hidden" name="Students[@i].StudentCode" value="@student.StudentCode" />
+                                            <input type="hidden" name="Students[@i].FullName" value="@student.FullName" />
+                                            <input type="number" step="0.1" min="0" max="10" 
+                                                   name="Students[@i].MidtermScore" 
+                                                   value="@student.MidtermScore" 
+                                                   class="form-control form-control-sm text-center midterm-score"
+                                                   data-index="@i" />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.1" min="0" max="10" 
+                                                   name="Students[@i].FinalScore" 
+                                                   value="@student.FinalScore" 
+                                                   class="form-control form-control-sm text-center final-score"
+                                                   data-index="@i" />
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="total-score" data-index="@i">
+                                                @if (student.TotalScore.HasValue)
+                                                {
+                                                    @student.TotalScore.Value.ToString("F2")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge letter-grade" data-index="@i">
+                                                @(student.LetterGrade ?? "-")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            function calculateGrade(midterm, final) {
+                if (midterm === null || final === null || midterm === '' || final === '') {
+                    return { total: null, letter: '-', badgeClass: 'bg-secondary' };
+                }
+                
+                var total = (parseFloat(midterm) * 0.4) + (parseFloat(final) * 0.6);
+                var letter = '-';
+                var badgeClass = 'bg-secondary';
+                
+                if (total >= 9.0) {
+                    letter = 'A+';
+                    badgeClass = 'bg-success';
+                } else if (total >= 8.5) {
+                    letter = 'A';
+                    badgeClass = 'bg-success';
+                } else if (total >= 8.0) {
+                    letter = 'B+';
+                    badgeClass = 'bg-success';
+                } else if (total >= 7.0) {
+                    letter = 'B';
+                    badgeClass = 'bg-success';
+                } else if (total >= 6.5) {
+                    letter = 'C+';
+                    badgeClass = 'bg-warning';
+                } else if (total >= 5.5) {
+                    letter = 'C';
+                    badgeClass = 'bg-warning';
+                } else if (total >= 5.0) {
+                    letter = 'D+';
+                    badgeClass = 'bg-info';
+                } else if (total >= 4.0) {
+                    letter = 'D';
+                    badgeClass = 'bg-info';
+                } else {
+                    letter = 'F';
+                    badgeClass = 'bg-danger';
+                }
+                
+                return { total: total, letter: letter, badgeClass: badgeClass };
+            }
+            
+            function updateRow(index) {
+                var midterm = $('input.midterm-score[data-index="' + index + '"]').val();
+                var final = $('input.final-score[data-index="' + index + '"]').val();
+                
+                var result = calculateGrade(midterm, final);
+                
+                var totalCell = $('.total-score[data-index="' + index + '"]');
+                var letterCell = $('.letter-grade[data-index="' + index + '"]');
+                
+                if (result.total !== null) {
+                    totalCell.html('<strong>' + result.total.toFixed(2) + '</strong>');
+                } else {
+                    totalCell.html('<span class="text-muted">-</span>');
+                }
+                
+                letterCell.removeClass('bg-success bg-warning bg-info bg-danger bg-secondary');
+                letterCell.addClass(result.badgeClass);
+                letterCell.text(result.letter);
+            }
+            
+            $('.midterm-score, .final-score').on('input', function() {
+                var index = $(this).data('index');
+                updateRow(index);
+            });
+        });
+    </script>
+}

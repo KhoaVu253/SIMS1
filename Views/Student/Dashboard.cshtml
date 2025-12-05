@@ -1,0 +1,140 @@
+@model SIMS.Models.Student
+@{
+    ViewData["Title"] = "Dashboard Sinh viên";
+}
+
+<div class="page-header">
+    <h2>
+        <i class="bi bi-speedometer2"></i>
+        Dashboard Sinh viên
+    </h2>
+    <p class="text-muted">Xin chào, <strong class="text-navy">@Model.FullName</strong>!</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card stat-card-navy">
+            <i class="bi bi-journal-check icon"></i>
+            <h6>Môn đã đăng ký</h6>
+            <h2>@ViewBag.TotalEnrollments</h2>
+            <small class="text-white d-block mt-2">Học kỳ hiện tại</small>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card stat-card-blue">
+            <i class="bi bi-award-fill icon"></i>
+            <h6>Tổng tín chỉ</h6>
+            <h2>@ViewBag.TotalCredits</h2>
+            <small class="text-white d-block mt-2">Đã đăng ký</small>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card stat-card-gold">
+            <i class="bi bi-trophy-fill icon"></i>
+            <h6>Điểm trung bình</h6>
+            <h2>@ViewBag.AverageGrade.ToString("F2")</h2>
+            <small class="text-white d-block mt-2">GPA tích lũy</small>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-person-circle me-2"></i>
+                Thông tin cá nhân
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-card-heading text-navy" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <small class="text-muted d-block">Mã sinh viên</small>
+                                <strong>@Model.StudentCode</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-person-fill text-navy" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <small class="text-muted d-block">Họ và tên</small>
+                                <strong>@Model.FullName</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-calendar-event text-navy" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <small class="text-muted d-block">Ngày sinh</small>
+                                <strong>@(Model.DateOfBirth?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-envelope-fill text-navy" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <small class="text-muted d-block">Email</small>
+                                <strong>@Model.Email</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-telephone-fill text-navy" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <small class="text-muted d-block">Số điện thoại</small>
+                                <strong>@Model.Phone</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-building text-navy" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <small class="text-muted d-block">Khoa</small>
+                                <strong>@Model.Department</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-door-open-fill text-navy" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <small class="text-muted d-block">Lớp</small>
+                                <strong>@Model.ClassName</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightning-fill me-2"></i>
+                Truy cập nhanh
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a asp-action="MySchedule" class="btn btn-outline-primary d-flex align-items-center justify-content-start gap-2">
+                        <i class="bi bi-calendar-week"></i>
+                        Xem lịch học
+                    </a>
+                    <a asp-action="MyGrades" class="btn btn-outline-primary d-flex align-items-center justify-content-start gap-2">
+                        <i class="bi bi-trophy-fill"></i>
+                        Xem điểm
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

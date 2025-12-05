@@ -1,0 +1,204 @@
+@model IEnumerable<SIMS.Models.Enrollment>
+@{
+    ViewData["Title"] = "Xem điểm";
+}
+
+<div class="page-header">
+    <h2>
+        <i class="bi bi-trophy"></i>
+        Bảng điểm
+    </h2>
+    <p class="text-muted">Xem điểm các môn học đã hoàn thành</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    Lọc theo học kỳ
+                </label>
+                <select name="semester" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Tất cả học kỳ --</option>
+                    @foreach (var sem in ViewBag.Semesters as string[])
+                    {
+                        <option value="@sem" selected="@(ViewBag.Semester == sem)">@sem</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Xem điểm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@{
+    var groupedEnrollments = Model.GroupBy(e => new { e.AcademicYear, e.Semester })
+                                  .OrderByDescending(g => g.Key.AcademicYear)
+                                  .ThenByDescending(g => g.Key.Semester);
+}
+
+@if (!groupedEnrollments.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Chưa có dữ liệu</h4>
+            <p class="text-muted">
+                Bạn chưa được phân công vào môn học nào hoặc chưa có điểm.
+            </p>
+        </div>
+    </div>
+}
+
+@foreach (var group in groupedEnrollments)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-calendar3 me-2"></i>
+            @group.Key.Semester - Năm học @group.Key.AcademicYear
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th><i class="bi bi-book me-1"></i> Mã môn</th>
+                            <th>Tên môn học</th>
+                            <th class="text-center"><i class="bi bi-award me-1"></i> Tín chỉ</th>
+                            <th class="text-center">Giữa kỳ</th>
+                            <th class="text-center">Cuối kỳ</th>
+                            <th class="text-center">Điểm TB</th>
+                            <th class="text-center">Xếp loại</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int stt = 1;
+                            foreach (var enrollment in group.OrderBy(e => e.Course.CourseCode))
+                            {
+                                <tr>
+                                    <td>@stt</td>
+                                    <td><strong class="text-navy">@enrollment.Course.CourseCode</strong></td>
+                                    <td>@enrollment.Course.CourseName</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info">@enrollment.Course.Credits</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (enrollment.MidtermScore.HasValue)
+                                        {
+                                            <span class="text-primary">@enrollment.MidtermScore.Value.ToString("F2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (enrollment.FinalScore.HasValue)
+                                        {
+                                            <span class="text-primary">@enrollment.FinalScore.Value.ToString("F2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (enrollment.AverageScore.HasValue)
+                                        {
+                                            <strong class="text-success">@enrollment.AverageScore.Value.ToString("F2")</strong>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (!string.IsNullOrEmpty(enrollment.LetterGrade))
+                                        {
+                                            var badgeClass = enrollment.LetterGrade.StartsWith("A") ? "bg-success" :
+                                                           enrollment.LetterGrade.StartsWith("B") ? "bg-primary" :
+                                                           enrollment.LetterGrade.StartsWith("C") ? "bg-info" :
+                                                           enrollment.LetterGrade.StartsWith("D") ? "bg-warning" : "bg-danger";
+                                            <span class="badge @badgeClass">@enrollment.LetterGrade</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                                stt++;
+                            }
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="3"><strong>Tổng học kỳ:</strong></td>
+                            <td class="text-center">
+                                <strong>@group.Sum(e => e.Course.Credits) TC</strong>
+                            </td>
+                            <td colspan="2"></td>
+                            <td class="text-center">
+                                @{
+                                    var semesterGrades = group.Where(e => e.AverageScore.HasValue)
+                                                              .Select(e => e.AverageScore!.Value);
+                                    if (semesterGrades.Any())
+                                    {
+                                        <strong class="text-primary">@semesterGrades.Average().ToString("F2")</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                }
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.Any())
+{
+    var allGrades = Model.Where(e => e.AverageScore.HasValue)
+                        .Select(e => e.AverageScore!.Value);
+    if (allGrades.Any())
+    {
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="stat-card stat-card-gold">
+                    <i class="bi bi-trophy-fill icon"></i>
+                    <h6>GPA tích lũy</h6>
+                    <h2>@allGrades.Average().ToString("F2")</h2>
+                    <small class="text-white d-block mt-2">Điểm trung bình</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card stat-card-blue">
+                    <i class="bi bi-award-fill icon"></i>
+                    <h6>Tổng tín chỉ</h6>
+                    <h2>@Model.Sum(e => e.Course.Credits)</h2>
+                    <small class="text-white d-block mt-2">Đã đăng ký</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card stat-card-green">
+                    <i class="bi bi-check-circle-fill icon"></i>
+                    <h6>Môn hoàn thành</h6>
+                    <h2>@Model.Count(e => e.AverageScore.HasValue)</h2>
+                    <small class="text-white d-block mt-2">Đã có điểm</small>
+                </div>
+            </div>
+        </div>
+    }
+}

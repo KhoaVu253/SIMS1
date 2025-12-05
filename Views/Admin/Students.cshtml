@@ -1,0 +1,150 @@
+@model IEnumerable<SIMS.Models.Student>
+@{
+    ViewData["Title"] = "Quản lý sinh viên";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-people"></i> Quản lý sinh viên</h2>
+        </div>
+        <div class="col-auto">
+            <a asp-action="CreateStudent" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Thêm sinh viên
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" name="searchString" value="@ViewBag.SearchString" 
+                           class="form-control" placeholder="Tìm kiếm theo mã SV, tên, khoa, lớp...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã SV</th>
+                            <th>Họ và tên</th>
+                            <th>Email</th>
+                            <th>Khoa</th>
+                            <th>Lớp</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model)
+                        {
+                            <tr>
+                                <td><strong>@student.StudentCode</strong></td>
+                                <td>@student.FullName</td>
+                                <td>@student.Email</td>
+                                <td>@student.Department</td>
+                                <td>@student.ClassName</td>
+                                <td>
+                                    @if (student.IsActive)
+                                    {
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Khóa</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="EditStudent" asp-route-id="@student.Id" 
+                                       class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    
+                                    @if (student.IsActive)
+                                    {
+                                        <!-- Xóa thông thường (soft delete nếu có enrollment) -->
+                                        <form asp-action="DeleteStudent" asp-route-id="@student.Id" 
+                                              method="post" class="d-inline"
+                                              onsubmit="return confirm('Xóa sinh viên @student.FullName?\n\nLưu ý: Nếu sinh viên đã có môn đăng ký, tài khoản sẽ bị khóa thay vì xóa.');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                        
+                                        <!-- Xóa hẳn (force delete) -->
+                                        <button type="button" class="btn btn-sm btn-outline-dark" 
+                                                title="Xóa hẳn (bao gồm cả enrollments)"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#forceDeleteModal-@student.Id">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Đã khóa</span>
+                                    }
+                                </td>
+                            </tr>
+                            
+                            <!-- Modal xác nhận xóa hẳn -->
+                            <div class="modal fade" id="forceDeleteModal-@student.Id" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title">
+                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                Xác nhận xóa hẳn
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="mb-3">
+                                                <strong>CẢNH BÁO:</strong> Bạn đang thực hiện xóa hẳn sinh viên:
+                                            </p>
+                                            <ul class="list-unstyled ms-3">
+                                                <li><strong>Mã SV:</strong> @student.StudentCode</li>
+                                                <li><strong>Họ tên:</strong> @student.FullName</li>
+                                                <li><strong>Lớp:</strong> @student.ClassName</li>
+                                            </ul>
+                                            <div class="alert alert-danger" role="alert">
+                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                <strong>Hành động này sẽ:</strong>
+                                                <ul class="mt-2 mb-0">
+                                                    <li>Xóa toàn bộ thông tin sinh viên</li>
+                                                    <li>Xóa tài khoản đăng nhập</li>
+                                                    <li>Xóa tất cả môn đã đăng ký</li>
+                                                    <li>Xóa tất cả điểm số</li>
+                                                </ul>
+                                                <p class="mt-2 mb-0"><strong>⚠️ KHÔNG THỂ HOÀN TÁC!</strong></p>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                <i class="bi bi-x-circle me-1"></i> Hủy
+                                            </button>
+                                            <form asp-action="ForceDeleteStudent" asp-route-id="@student.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="bi bi-trash me-1"></i> Xóa hẳn
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

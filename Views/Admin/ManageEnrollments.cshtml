@@ -1,0 +1,185 @@
+@model IEnumerable<SIMS.Models.ViewModels.EnrollmentListViewModel>
+@{
+    ViewData["Title"] = "Quản lý phân công lớp học";
+}
+
+<div class="page-header">
+    <h2>
+        <i class="bi bi-calendar-check"></i>
+        Quản lý phân công lớp học
+    </h2>
+    <p class="text-muted">Phân công và quản lý sinh viên trong các lớp học</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-lightning-fill me-2"></i>
+                Thao tác nhanh
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a asp-action="AssignStudents" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-person-plus-fill me-2"></i>
+                            Phân công sinh viên vào lớp
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a asp-action="BulkAssign" class="btn btn-warning btn-lg w-100">
+                            <i class="bi bi-people-fill me-2"></i>
+                            Phân công hàng loạt theo khoa/lớp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label"><i class="bi bi-calendar3 me-1"></i> Học kỳ</label>
+                <select name="semester" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Tất cả --</option>
+                    @foreach (var sem in ViewBag.Semesters as string[])
+                    {
+                        <option value="@sem" selected="@(ViewBag.Semester == sem)">@sem</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label"><i class="bi bi-calendar-range me-1"></i> Năm học</label>
+                <input type="text" name="academicYear" class="form-control" 
+                       placeholder="2024-2025" value="@ViewBag.AcademicYear">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label"><i class="bi bi-book me-1"></i> Môn học</label>
+                <select name="courseId" class="form-select" asp-items="ViewBag.Courses">
+                    <option value="">-- Tất cả --</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2 w-100">
+                    <i class="bi bi-search"></i> Lọc
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i>
+        Danh sách phân công (@Model.Count())
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th><i class="bi bi-person me-1"></i> Mã SV</th>
+                        <th>Họ tên</th>
+                        <th><i class="bi bi-book me-1"></i> Môn học</th>
+                        <th><i class="bi bi-calendar me-1"></i> Học kỳ</th>
+                        <th>Trạng thái</th>
+                        <th>Điểm TB</th>
+                        <th>Phân công bởi</th>
+                        <th>Ngày phân công</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                <p class="mb-0 mt-2">Chưa có phân công nào</p>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        int stt = 1;
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@stt</td>
+                                <td><strong class="text-navy">@item.StudentCode</strong></td>
+                                <td>@item.StudentName</td>
+                                <td>
+                                    <strong>@item.CourseCode</strong> - @item.CourseName
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@item.Semester</span>
+                                    <small class="text-muted">@item.AcademicYear</small>
+                                </td>
+                                <td>
+                                    @if (item.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">Đang học</span>
+                                    }
+                                    else if (item.Status == "Completed")
+                                    {
+                                        <span class="badge bg-primary">Hoàn thành</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Rút môn</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.AverageScore.HasValue)
+                                    {
+                                        <strong class="text-primary">@item.AverageScore.Value.ToString("F2")</strong>
+                                        <small class="text-muted">(@item.LetterGrade)</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa có</span>
+                                    }
+                                </td>
+                                <td>
+                                    <small class="text-muted">@item.AssignedBy</small>
+                                </td>
+                                <td>
+                                    <small>@item.AssignedDate.ToString("dd/MM/yyyy")</small>
+                                </td>
+                                <td class="text-center">
+                                    <form asp-action="RemoveEnrollment" asp-route-id="@item.Id" 
+                                          method="post" class="d-inline"
+                                          onsubmit="return confirm('Xóa phân công này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa phân công">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header bg-info text-white">
+        <i class="bi bi-info-circle me-2"></i>
+        Hướng dẫn
+    </div>
+    <div class="card-body">
+        <ul class="mb-0">
+            <li><strong>Phân công sinh viên:</strong> Chọn sinh viên cụ thể để phân công vào lớp</li>
+            <li><strong>Phân công hàng loạt:</strong> Phân công toàn bộ sinh viên theo khoa/lớp vào môn học</li>
+            <li><strong>Xóa phân công:</strong> Chỉ xóa được khi sinh viên chưa có điểm</li>
+        </ul>
+    </div>
+</div>

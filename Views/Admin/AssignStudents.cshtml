@@ -1,0 +1,178 @@
+@model SIMS.Models.ViewModels.AssignStudentToCourseViewModel
+@{
+    ViewData["Title"] = "Phân công sinh viên vào lớp";
+}
+
+<div class="page-header">
+    <h2>
+        <i class="bi bi-person-plus-fill"></i>
+        Phân công sinh viên vào lớp
+    </h2>
+    <p class="text-muted">Chọn sinh viên cụ thể để phân công vào môn học</p>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="AssignStudents" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label asp-for="CourseId" class="form-label">
+                                <i class="bi bi-book me-1"></i>
+                                Môn học
+                            </label>
+                            <select asp-for="CourseId" class="form-select" asp-items="ViewBag.Courses">
+                                <option value="">-- Chọn môn học --</option>
+                            </select>
+                            <span asp-validation-for="CourseId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Semester" class="form-label">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                Học kỳ
+                            </label>
+                            <select asp-for="Semester" class="form-select">
+                                @foreach (var sem in ViewBag.Semesters as string[])
+                                {
+                                    <option value="@sem">@sem</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Semester" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="AcademicYear" class="form-label">
+                                <i class="bi bi-calendar-range me-1"></i>
+                                Năm học
+                            </label>
+                            <input asp-for="AcademicYear" class="form-control" placeholder="2024-2025" />
+                            <span asp-validation-for="AcademicYear" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-12">
+                            <hr class="my-4" />
+                            <h5 class="mb-3">
+                                <i class="bi bi-people me-2"></i>
+                                Chọn sinh viên
+                            </h5>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="bi bi-building me-1"></i>
+                                Lọc theo khoa
+                            </label>
+                            <select id="filterDepartment" class="form-select">
+                                <option value="">-- Chọn khoa --</option>
+                                @foreach (var dept in ViewBag.Departments as string[])
+                                {
+                                    <option value="@dept">@dept</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="bi bi-door-open me-1"></i>
+                                Lọc theo lớp
+                            </label>
+                            <input type="text" id="filterClassName" class="form-control" placeholder="Ví dụ: 21IT1" />
+                        </div>
+
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="button" id="btnLoadStudents" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i> Tải danh sách sinh viên
+                            </button>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="bi bi-list-check me-1"></i>
+                                Danh sách sinh viên (chọn nhiều)
+                            </label>
+                            <select asp-for="StudentIds" id="studentList" class="form-select" multiple size="10" disabled>
+                                <option disabled>Vui lòng chọn khoa và click "Tải danh sách"</option>
+                            </select>
+                            <span asp-validation-for="StudentIds" class="text-danger"></span>
+                            <small class="text-muted">
+                                Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều sinh viên
+                            </small>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="Notes" class="form-label">
+                                <i class="bi bi-sticky me-1"></i>
+                                Ghi chú
+                            </label>
+                            <textarea asp-for="Notes" class="form-control" rows="3" 
+                                      placeholder="Ghi chú về phân công này (không bắt buộc)"></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <hr />
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Phân công
+                            </button>
+                            <a asp-action="ManageEnrollments" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-x-circle"></i> Hủy
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('#btnLoadStudents').click(function() {
+                var department = $('#filterDepartment').val();
+                var className = $('#filterClassName').val();
+
+                if (!department) {
+                    alert('Vui lòng chọn khoa!');
+                    return;
+                }
+
+                // Show loading
+                $('#studentList').html('<option>Đang tải...</option>').prop('disabled', true);
+
+                // AJAX call
+                $.ajax({
+                    url: '@Url.Action("GetStudentsByDepartment", "Admin")',
+                    type: 'GET',
+                    data: { 
+                        department: department,
+                        className: className 
+                    },
+                    success: function(data) {
+                        $('#studentList').empty().prop('disabled', false);
+                        
+                        if (data.length === 0) {
+                            $('#studentList').html('<option disabled>Không tìm thấy sinh viên nào</option>');
+                        } else {
+                            $.each(data, function(index, item) {
+                                $('#studentList').append(
+                                    $('<option></option>').val(item.id).text(item.text)
+                                );
+                            });
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi tải danh sách sinh viên!');
+                        $('#studentList').html('<option disabled>Lỗi khi tải dữ liệu</option>');
+                    }
+                });
+            });
+        });
+    </script>
+}

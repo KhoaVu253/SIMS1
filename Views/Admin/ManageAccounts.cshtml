@@ -1,0 +1,186 @@
+@model IEnumerable<SIMS.Models.ViewModels.AccountManagementViewModel>
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<div class="page-header">
+    <h2>
+        <i class="bi bi-person-lock"></i>
+        Quản lý tài khoản
+    </h2>
+    <p class="text-muted">Quản lý tài khoản đăng nhập của sinh viên và giảng viên</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label"><i class="bi bi-funnel me-1"></i> Vai trò</label>
+                <select name="role" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tất cả</option>
+                    <option value="Student" selected="@(ViewBag.Role == "Student")">Sinh viên</option>
+                    <option value="Faculty" selected="@(ViewBag.Role == "Faculty")">Giảng viên</option>
+                    <option value="Admin" selected="@(ViewBag.Role == "Admin")">Admin</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label"><i class="bi bi-search me-1"></i> Tìm kiếm</label>
+                <input type="text" name="searchString" class="form-control" 
+                       placeholder="Nhập tên đăng nhập..." value="@ViewBag.SearchString">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-search"></i> Tìm
+                </button>
+                <a asp-action="ManageAccounts" class="btn btn-secondary">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul me-2"></i>
+        Danh sách tài khoản (@Model.Count())
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th><i class="bi bi-person me-1"></i> Tên đăng nhập</th>
+                        <th><i class="bi bi-person-badge me-1"></i> Họ tên</th>
+                        <th><i class="bi bi-envelope me-1"></i> Email</th>
+                        <th><i class="bi bi-shield me-1"></i> Vai trò</th>
+                        <th><i class="bi bi-toggle-on me-1"></i> Trạng thái</th>
+                        <th class="text-center"><i class="bi bi-gear me-1"></i> Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                <p class="mb-0 mt-2">Không tìm thấy tài khoản nào</p>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        int stt = 1;
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@stt</td>
+                                <td>
+                                    <strong class="text-navy">@item.Username</strong>
+                                </td>
+                                <td>@item.FullName</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Email))
+                                    {
+                                        <a href="mailto:@item.Email" class="text-decoration-none">
+                                            @item.Email
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.Role == "Admin")
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-shield-fill-check"></i> Admin
+                                        </span>
+                                    }
+                                    else if (item.Role == "Faculty")
+                                    {
+                                        <span class="badge bg-primary">
+                                            <i class="bi bi-person-badge"></i> Giảng viên
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-person"></i> Sinh viên
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-x-circle"></i> Đã khóa
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Role != "Admin")
+                                    {
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="ResetPassword" asp-route-id="@item.UserId" 
+                                               class="btn btn-outline-primary" title="Đổi mật khẩu">
+                                                <i class="bi bi-key"></i>
+                                            </a>
+                                            
+                                            <form asp-action="ResetPasswordToDefault" asp-route-id="@item.UserId" 
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Reset mật khẩu về 123456?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-warning" title="Reset về mặc định">
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                            </form>
+                                            
+                                            <form asp-action="ToggleAccountStatus" asp-route-id="@item.UserId" 
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('@(item.IsActive ? "Khóa" : "Mở khóa") tài khoản này?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-@(item.IsActive ? "danger" : "success")" 
+                                                        title="@(item.IsActive ? "Khóa" : "Mở khóa") tài khoản">
+                                                    <i class="bi bi-@(item.IsActive ? "lock" : "unlock")"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">N/A</span>
+                                    }
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-warning text-dark">
+        <i class="bi bi-info-circle me-2"></i>
+        Hướng dẫn
+    </div>
+    <div class="card-body">
+        <ul class="mb-0">
+            <li><strong><i class="bi bi-key text-primary"></i> Đổi mật khẩu:</strong> Đặt mật khẩu mới cho tài khoản</li>
+            <li><strong><i class="bi bi-arrow-counterclockwise text-warning"></i> Reset mặc định:</strong> Reset mật khẩu về <code>123456</code></li>
+            <li><strong><i class="bi bi-lock text-danger"></i> Khóa/Mở:</strong> Khóa hoặc mở khóa tài khoản đăng nhập</li>
+            <li class="text-muted mt-2"><i class="bi bi-lightbulb"></i> <em>Lưu ý: Tài khoản Admin không thể quản lý từ trang này</em></li>
+        </ul>
+    </div>
+</div>

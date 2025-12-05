@@ -1,0 +1,100 @@
+@model SIMS.Models.ViewModels.EnrollCourseViewModel
+@{
+    ViewData["Title"] = "Đăng ký môn học";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-journal-plus"></i> Đăng ký môn học</h2>
+            <p class="text-muted">Học kỳ: @Model.Semester - Năm học: @Model.AcademicYear</p>
+        </div>
+    </div>
+
+    <form asp-action="EnrollCourses" method="post">
+        <input type="hidden" name="semester" value="@Model.Semester" />
+        <input type="hidden" name="academicYear" value="@Model.AcademicYear" />
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Danh sách môn học</h5>
+                <span class="badge bg-primary" id="totalCredits">Tổng tín chỉ: 0</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50px" class="text-center">
+                                    <input type="checkbox" id="selectAll" class="form-check-input" />
+                                </th>
+                                <th>Mã môn</th>
+                                <th>Tên môn học</th>
+                                <th class="text-center">Tín chỉ</th>
+                                <th>Khoa</th>
+                                <th>Giảng viên</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var course in Model.AvailableCourses)
+                            {
+                                var isChecked = Model.EnrolledCourseIds.Contains(course.Id);
+                                <tr>
+                                    <td class="text-center">
+                                        <input type="checkbox" name="selectedCourses" value="@course.Id" 
+                                               class="form-check-input course-checkbox" 
+                                               data-credits="@course.Credits"
+                                               @(isChecked ? "checked" : "") />
+                                    </td>
+                                    <td><strong>@course.CourseCode</strong></td>
+                                    <td>@course.CourseName</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info">@course.Credits</span>
+                                    </td>
+                                    <td>@course.Department</td>
+                                    <td>@(course.Faculty?.FullName ?? "Chưa phân công")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Lưu đăng ký
+                </button>
+                <a asp-action="Dashboard" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            function updateTotalCredits() {
+                let total = 0;
+                $('.course-checkbox:checked').each(function() {
+                    total += parseInt($(this).data('credits'));
+                });
+                $('#totalCredits').text('Tổng tín chỉ: ' + total);
+            }
+
+            // Initial calculation
+            updateTotalCredits();
+
+            // Update on checkbox change
+            $('.course-checkbox').change(function() {
+                updateTotalCredits();
+            });
+
+            // Select all functionality
+            $('#selectAll').change(function() {
+                $('.course-checkbox').prop('checked', $(this).prop('checked'));
+                updateTotalCredits();
+            });
+        });
+    </script>
+}

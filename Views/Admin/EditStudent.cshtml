@@ -1,0 +1,103 @@
+@model SIMS.Models.ViewModels.StudentFormViewModel
+@{
+    ViewData["Title"] = "Chỉnh sửa sinh viên";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-pencil"></i> Chỉnh sửa sinh viên</h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="EditStudent" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="StudentCode" class="form-label"></label>
+                        <input asp-for="StudentCode" class="form-control" readonly />
+                        <span asp-validation-for="StudentCode" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" type="email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Phone" class="form-label"></label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="DateOfBirth" class="form-label"></label>
+                        <input asp-for="DateOfBirth" type="date" class="form-control" />
+                        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Department" class="form-label">
+                            <i class="bi bi-building me-1"></i>
+                            Khoa
+                        </label>
+                        <select asp-for="Department" class="form-select">
+                            <option value="">-- Chọn khoa --</option>
+                            @foreach (var dept in ViewBag.Departments as string[])
+                            {
+                                <option value="@dept">@dept</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Department" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="ClassName" class="form-label"></label>
+                        <input asp-for="ClassName" class="form-control" />
+                        <span asp-validation-for="ClassName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" type="password" class="form-control" 
+                               placeholder="Để trống nếu không muốn đổi mật khẩu" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label d-block">&nbsp;</label>
+                        <div class="form-check">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label asp-for="IsActive" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <hr />
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Cập nhật
+                        </button>
+                        <a asp-action="Students" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Hủy
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

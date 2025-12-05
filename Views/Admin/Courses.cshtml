@@ -1,0 +1,85 @@
+@model IEnumerable<SIMS.Models.Course>
+@{
+    ViewData["Title"] = "Quản lý môn học";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-book"></i> Quản lý môn học</h2>
+        </div>
+        <div class="col-auto">
+            <a asp-action="CreateCourse" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Thêm môn học
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" name="searchString" value="@ViewBag.SearchString" 
+                           class="form-control" placeholder="Tìm kiếm theo mã môn, tên môn, khoa...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã môn</th>
+                            <th>Tên môn học</th>
+                            <th class="text-center">Tín chỉ</th>
+                            <th>Khoa</th>
+                            <th>Giảng viên</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var course in Model)
+                        {
+                            <tr>
+                                <td><strong>@course.CourseCode</strong></td>
+                                <td>@course.CourseName</td>
+                                <td class="text-center"><span class="badge bg-info">@course.Credits</span></td>
+                                <td>@course.Department</td>
+                                <td>@(course.Faculty?.FullName ?? "Chưa gán")</td>
+                                <td>
+                                    @if (course.IsActive)
+                                    {
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Khóa</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="EditCourse" asp-route-id="@course.Id" 
+                                       class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-action="DeleteCourse" asp-route-id="@course.Id" 
+                                          method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc muốn xóa môn học này?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
