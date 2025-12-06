@@ -29,6 +29,12 @@ namespace SIMS.Models
 
         // Navigation properties
         public User User { get; set; } = null!;
+
+        // ⚠️ DEPRECATED: Giữ lại để backward compatibility
+        [Obsolete("Use CourseFaculties navigation property instead")]
         public ICollection<Course> Courses { get; set; } = new List<Course>();
+
+        // ✅ NEW: Many-to-Many relationship với Course
+        public ICollection<CourseFaculty> CourseFaculties { get; set; } = new List<CourseFaculty>();
     }
 }

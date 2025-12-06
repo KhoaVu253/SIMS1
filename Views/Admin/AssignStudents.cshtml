@@ -8,7 +8,7 @@
         <i class="bi bi-person-plus-fill"></i>
         Phân công sinh viên vào lớp
     </h2>
-    <p class="text-muted">Chọn sinh viên cụ thể để phân công vào môn học</p>
+    <p class="text-muted">Chọn sinh viên cụ thể để phân công vào môn học và lớp</p>
 </div>
 
 <div class="row">
@@ -20,15 +20,31 @@
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                     <div class="row g-3">
+                        <!-- Môn học -->
                         <div class="col-md-12">
                             <label asp-for="CourseId" class="form-label">
                                 <i class="bi bi-book me-1"></i>
                                 Môn học
                             </label>
-                            <select asp-for="CourseId" class="form-select" asp-items="ViewBag.Courses">
+                            <select asp-for="CourseId" id="courseSelect" class="form-select" asp-items="ViewBag.Courses">
                                 <option value="">-- Chọn môn học --</option>
                             </select>
                             <span asp-validation-for="CourseId" class="text-danger"></span>
+                        </div>
+
+                        <!-- ✅ NEW: Chọn lớp/lịch học -->
+                        <div class="col-md-12" id="scheduleSelectContainer" style="display: none;">
+                            <label asp-for="ScheduleId" class="form-label">
+                                <i class="bi bi-calendar-check me-1"></i>
+                                Lớp học (tùy chọn)
+                            </label>
+                            <select asp-for="ScheduleId" id="scheduleSelect" class="form-select">
+                                <option value="">-- Không chọn lớp cụ thể (chỉ đăng ký môn) --</option>
+                            </select>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Chọn lớp cụ thể nếu muốn phân công sinh viên vào lớp với giảng viên, thời gian, phòng xác định
+                            </small>
                         </div>
 
                         <div class="col-md-6">
@@ -36,7 +52,7 @@
                                 <i class="bi bi-calendar3 me-1"></i>
                                 Học kỳ
                             </label>
-                            <select asp-for="Semester" class="form-select">
+                            <select asp-for="Semester" id="semesterSelect" class="form-select">
                                 @foreach (var sem in ViewBag.Semesters as string[])
                                 {
                                     <option value="@sem">@sem</option>
@@ -50,7 +66,7 @@
                                 <i class="bi bi-calendar-range me-1"></i>
                                 Năm học
                             </label>
-                            <input asp-for="AcademicYear" class="form-control" placeholder="2024-2025" />
+                            <input asp-for="AcademicYear" id="academicYearInput" class="form-control" placeholder="2024-2025" />
                             <span asp-validation-for="AcademicYear" class="text-danger"></span>
                         </div>
 
@@ -134,6 +150,56 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function() {
+            // ✅ NEW: Load schedules when course/semester/year changes
+            function loadSchedules() {
+                var courseId = $('#courseSelect').val();
+                var semester = $('#semesterSelect').val();
+                var academicYear = $('#academicYearInput').val();
+
+                if (!courseId || !semester || !academicYear) {
+                    $('#scheduleSelectContainer').hide();
+                    return;
+                }
+
+                $('#scheduleSelect').html('<option value="">Đang tải...</option>');
+                $('#scheduleSelectContainer').show();
+
+                $.ajax({
+                    url: '@Url.Action("GetCourseSchedules", "Admin")',
+                    type: 'GET',
+                    data: { 
+                        courseId: courseId,
+                        semester: semester,
+                        academicYear: academicYear
+                    },
+                    success: function(data) {
+                        $('#scheduleSelect').empty();
+                        $('#scheduleSelect').append('<option value="">-- Không chọn lớp cụ thể --</option>');
+                        
+                        if (data.length === 0) {
+                            $('#scheduleSelect').append('<option disabled>Chưa có lớp nào cho môn này</option>');
+                        } else {
+                            $.each(data, function(i, schedule) {
+                                var text = schedule.facultyName + ' - ' + 
+                                          schedule.dayName + ', ' + 
+                                          schedule.periodRange + ' (' + 
+                                          schedule.timeRange + '), ' +
+                                          'Phòng ' + schedule.room;
+                                $('#scheduleSelect').append(
+                                    $('<option></option>').val(schedule.scheduleId).text(text)
+                                );
+                            });
+                        }
+                    },
+                    error: function() {
+                        $('#scheduleSelect').html('<option disabled>Lỗi khi tải lịch học</option>');
+                    }
+                });
+            }
+
+            $('#courseSelect, #semesterSelect, #academicYearInput').on('change', loadSchedules);
+
+            // Load students
             $('#btnLoadStudents').click(function() {
                 var department = $('#filterDepartment').val();
                 var className = $('#filterClassName').val();
@@ -143,10 +209,8 @@
                     return;
                 }
 
-                // Show loading
                 $('#studentList').html('<option>Đang tải...</option>').prop('disabled', true);
 
-                // AJAX call
                 $.ajax({
                     url: '@Url.Action("GetStudentsByDepartment", "Admin")',
                     type: 'GET',

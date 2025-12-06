@@ -12,6 +12,12 @@ namespace SIMS.Models
         [Required]
         public int CourseId { get; set; }
 
+        /// <summary>
+        /// ✅ NEW: Lớp/lịch học cụ thể mà sinh viên được phân công vào
+        /// Optional: Nếu null = Chỉ đăng ký môn, không gắn lớp cụ thể
+        /// </summary>
+        public int? ScheduleId { get; set; }
+
         [Required]
         [StringLength(20)]
         public string Semester { get; set; } = string.Empty; // "HK1", "HK2", "HK3"
@@ -41,6 +47,7 @@ namespace SIMS.Models
         // Navigation properties
         public Student Student { get; set; } = null!;
         public Course Course { get; set; } = null!;
+        public CourseSchedule? Schedule { get; set; } // ✅ NEW: Lớp cụ thể
         public User? AssignedByUser { get; set; }
     }
 }

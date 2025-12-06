@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SIMS.Models;
 
@@ -11,9 +12,11 @@ using SIMS.Models;
 namespace SIMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251205081534_AddCourseFacultyManyToMany")]
+    partial class AddCourseFacultyManyToMany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,9 +168,6 @@ namespace SIMS.Migrations
                     b.Property<int>("EndPeriod")
                         .HasColumnType("int");
 
-                    b.Property<int>("FacultyId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -191,8 +191,6 @@ namespace SIMS.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
-
-                    b.HasIndex("FacultyId");
 
                     b.HasIndex("Semester", "AcademicYear", "DayOfWeek", "IsActive");
 
@@ -497,15 +495,7 @@ namespace SIMS.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SIMS.Models.Faculty", "Faculty")
-                        .WithMany()
-                        .HasForeignKey("FacultyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Course");
-
-                    b.Navigation("Faculty");
                 });
 
             modelBuilder.Entity("SIMS.Models.Enrollment", b =>

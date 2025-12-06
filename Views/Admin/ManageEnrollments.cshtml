@@ -151,6 +151,20 @@
                                     <small>@item.AssignedDate.ToString("dd/MM/yyyy")</small>
                                 </td>
                                 <td class="text-center">
+                                    <!-- Xem chi tiết lớp -->
+                                    @if (item.ScheduleId.HasValue)
+                                    {
+                                        <a asp-action="ViewClassDetails" 
+                                           asp-route-scheduleId="@item.ScheduleId" 
+                                           asp-route-semester="@item.Semester"
+                                           asp-route-academicYear="@item.AcademicYear"
+                                           class="btn btn-sm btn-outline-info me-1" 
+                                           title="Xem chi tiết lớp">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    }
+                                    
+                                    <!-- Xóa phân công -->
                                     <form asp-action="RemoveEnrollment" asp-route-id="@item.Id" 
                                           method="post" class="d-inline"
                                           onsubmit="return confirm('Xóa phân công này?');">

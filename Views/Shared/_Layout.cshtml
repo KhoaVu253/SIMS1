@@ -67,6 +67,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ManageSchedules" || ViewContext.RouteData.Values["action"]?.ToString() == "CreateSchedule" || ViewContext.RouteData.Values["action"]?.ToString() == "EditSchedule" ? "active" : "")" 
+                               asp-controller="Admin" asp-action="ManageSchedules">
+                                <i class="bi bi-calendar-week"></i>
+                                <span>Quản lý lịch học</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ManageEnrollments" || ViewContext.RouteData.Values["action"]?.ToString() == "AssignStudents" || ViewContext.RouteData.Values["action"]?.ToString() == "BulkAssign" ? "active" : "")" 
                                asp-controller="Admin" asp-action="ManageEnrollments">
                                 <i class="bi bi-calendar-check"></i>
@@ -91,10 +98,17 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "WeeklySchedule" ? "active" : "")" 
+                               asp-controller="Student" asp-action="WeeklySchedule">
+                                <i class="bi bi-calendar-week"></i>
+                                <span>Lịch học theo tuần</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "MySchedule" ? "active" : "")" 
                                asp-controller="Student" asp-action="MySchedule">
-                                <i class="bi bi-calendar-week"></i>
-                                <span>Lịch học của tôi</span>
+                                <i class="bi bi-list-check"></i>
+                                <span>Danh sách môn học</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -112,6 +126,13 @@
                                asp-controller="Faculty" asp-action="Dashboard">
                                 <i class="bi bi-speedometer2"></i>
                                 <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "MySchedule" ? "active" : "")" 
+                               asp-controller="Faculty" asp-action="MySchedule">
+                                <i class="bi bi-calendar-week"></i>
+                                <span>Lịch dạy của tôi</span>
                             </a>
                         </li>
                         <li class="nav-item">

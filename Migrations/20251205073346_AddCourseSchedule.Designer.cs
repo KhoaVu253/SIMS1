@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SIMS.Models;
 
@@ -11,9 +12,11 @@ using SIMS.Models;
 namespace SIMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251205073346_AddCourseSchedule")]
+    partial class AddCourseSchedule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,50 +99,6 @@ namespace SIMS.Migrations
                         });
                 });
 
-            modelBuilder.Entity("SIMS.Models.CourseFaculty", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AssignedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ClassGroup")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("CourseId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FacultyId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FacultyId");
-
-                    b.HasIndex("CourseId", "FacultyId", "ClassGroup")
-                        .IsUnique()
-                        .HasFilter("[ClassGroup] IS NOT NULL");
-
-                    b.ToTable("CourseFaculties");
-                });
-
             modelBuilder.Entity("SIMS.Models.CourseSchedule", b =>
                 {
                     b.Property<int>("Id")
@@ -165,9 +124,6 @@ namespace SIMS.Migrations
                     b.Property<int>("EndPeriod")
                         .HasColumnType("int");
 
-                    b.Property<int>("FacultyId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -191,8 +147,6 @@ namespace SIMS.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
-
-                    b.HasIndex("FacultyId");
 
                     b.HasIndex("Semester", "AcademicYear", "DayOfWeek", "IsActive");
 
@@ -470,25 +424,6 @@ namespace SIMS.Migrations
                     b.Navigation("Faculty");
                 });
 
-            modelBuilder.Entity("SIMS.Models.CourseFaculty", b =>
-                {
-                    b.HasOne("SIMS.Models.Course", "Course")
-                        .WithMany("CourseFaculties")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SIMS.Models.Faculty", "Faculty")
-                        .WithMany("CourseFaculties")
-                        .HasForeignKey("FacultyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-
-                    b.Navigation("Faculty");
-                });
-
             modelBuilder.Entity("SIMS.Models.CourseSchedule", b =>
                 {
                     b.HasOne("SIMS.Models.Course", "Course")
@@ -497,15 +432,7 @@ namespace SIMS.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SIMS.Models.Faculty", "Faculty")
-                        .WithMany()
-                        .HasForeignKey("FacultyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Course");
-
-                    b.Navigation("Faculty");
                 });
 
             modelBuilder.Entity("SIMS.Models.Enrollment", b =>
@@ -558,15 +485,11 @@ namespace SIMS.Migrations
 
             modelBuilder.Entity("SIMS.Models.Course", b =>
                 {
-                    b.Navigation("CourseFaculties");
-
                     b.Navigation("Enrollments");
                 });
 
             modelBuilder.Entity("SIMS.Models.Faculty", b =>
                 {
-                    b.Navigation("CourseFaculties");
-
                     b.Navigation("Courses");
                 });
 

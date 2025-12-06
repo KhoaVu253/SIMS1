@@ -148,5 +148,104 @@ namespace SIMS.Controllers
 
             return View(enrollments);
         }
+
+        // ============================================
+        // WEEKLY SCHEDULE - Lịch học theo tuần
+        // ============================================
+
+        [HttpGet]
+        public async Task<IActionResult> WeeklySchedule(string? semester, string? academicYear)
+        {
+            var student = await GetCurrentStudent();
+            if (student == null) return NotFound();
+
+            var currentSemester = semester ?? Constants.CurrentSemester;
+            var currentYear = academicYear ?? Constants.CurrentAcademicYear;
+
+            // ✅ FIX: Lấy enrollments với ScheduleId (lớp đã được phân công)
+            var enrollments = await _context.Enrollments
+                .Include(e => e.Schedule)
+                    .ThenInclude(s => s!.Faculty)
+                .Include(e => e.Schedule)
+                    .ThenInclude(s => s!.Course)
+                .Where(e => e.StudentId == student.Id &&
+                           e.Semester == currentSemester &&
+                           e.AcademicYear == currentYear &&
+                           e.Status == "Active" &&
+                           e.ScheduleId != null) // ✅ CHỈ lấy enrollment có ScheduleId
+                .ToListAsync();
+
+            if (!enrollments.Any())
+            {
+                // No schedules assigned
+                var emptyModel = new StudentWeeklyScheduleViewModel
+                {
+                    StudentName = student.FullName,
+                    StudentCode = student.StudentCode,
+                    Semester = currentSemester,
+                    AcademicYear = currentYear,
+                    WeekSchedule = new List<DaySchedule>()
+                };
+
+                ViewBag.Semester = currentSemester;
+                ViewBag.AcademicYear = currentYear;
+                ViewBag.Semesters = Constants.Semesters;
+                return View(emptyModel);
+            }
+
+            // ✅ Build schedule từ enrollments (CHỈ lớp đã phân công)
+            var scheduleItems = enrollments
+                .Where(e => e.Schedule != null)
+                .Select(e => new ScheduleItem
+                {
+                    ScheduleId = e.Schedule!.Id,
+                    CourseId = e.Schedule.CourseId,
+                    CourseCode = e.Schedule.Course.CourseCode,
+                    CourseName = e.Schedule.Course.CourseName,
+                    StartPeriod = e.Schedule.StartPeriod,
+                    EndPeriod = e.Schedule.EndPeriod,
+                    PeriodRange = ScheduleHelper.GetPeriodRange(e.Schedule.StartPeriod, e.Schedule.EndPeriod),
+                    TimeRange = ScheduleHelper.GetTimeRange(e.Schedule.StartPeriod, e.Schedule.EndPeriod),
+                    Room = e.Schedule.Room,
+                    FacultyName = e.Schedule.Faculty != null ? e.Schedule.Faculty.FullName : "Chưa phân công",
+                    Credits = e.Schedule.Course.Credits,
+                    SessionType = ScheduleHelper.GetSessionType(e.Schedule.StartPeriod),
+                    ColorClass = ScheduleHelper.GetSessionColorClass(e.Schedule.StartPeriod),
+                    DayOfWeek = e.Schedule.DayOfWeek,
+                    Notes = e.Schedule.Notes
+                })
+                .ToList();
+
+            // Group by day of week
+            var weekSchedule = ScheduleHelper.GetAllDays()
+                .Select(day => new DaySchedule
+                {
+                    DayOfWeek = day.Value,
+                    DayName = day.Name,
+                    DayAbbr = ScheduleHelper.GetDayAbbreviation(day.Value),
+                    Classes = scheduleItems
+                        .Where(s => s.DayOfWeek == day.Value)
+                        .OrderBy(s => s.StartPeriod)
+                        .ToList()
+                })
+                .ToList();
+
+            var model = new StudentWeeklyScheduleViewModel
+            {
+                StudentName = student.FullName,
+                StudentCode = student.StudentCode,
+                Semester = currentSemester,
+                AcademicYear = currentYear,
+                WeekSchedule = weekSchedule,
+                TotalCourses = enrollments.Select(e => e.CourseId).Distinct().Count(),
+                TotalClassesPerWeek = scheduleItems.Count
+            };
+
+            ViewBag.Semester = currentSemester;
+            ViewBag.AcademicYear = currentYear;
+            ViewBag.Semesters = Constants.Semesters;
+
+            return View(model);
+        }
     }
 }

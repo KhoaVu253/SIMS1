@@ -50,11 +50,34 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label asp-for="FacultyId" class="form-label"></label>
+                        <label asp-for="FacultyId" class="form-label">
+                            <i class="bi bi-person me-1"></i>
+                            Giảng viên chính
+                        </label>
                         <select asp-for="FacultyId" class="form-select" asp-items="ViewBag.Faculties">
-                            <option value="">-- Chọn giảng viên --</option>
+                            <option value="">-- Chọn giảng viên chính --</option>
                         </select>
                         <span asp-validation-for="FacultyId" class="text-danger"></span>
+                        <small class="text-muted">Tùy chọn. Có thể thêm nhiều giảng viên sau khi tạo môn học.</small>
+                    </div>
+
+                    <!-- ✅ NEW: Multiple Faculty Selection -->
+                    <div class="col-md-12">
+                        <label class="form-label">
+                            <i class="bi bi-people me-1"></i>
+                            Chọn nhiều giảng viên (Tùy chọn)
+                        </label>
+                        <select name="selectedFaculties" class="form-select" multiple size="5">
+                            @foreach (var faculty in ViewBag.Faculties as SelectList)
+                            {
+                                <option value="@faculty.Value">@faculty.Text</option>
+                            }
+                        </select>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều giảng viên. 
+                            Bạn cũng có thể thêm/quản lý giảng viên sau khi tạo môn học.
+                        </small>
                     </div>
 
                     <div class="col-md-12">
@@ -77,8 +100,36 @@
             </form>
         </div>
     </div>
+
+    <!-- Help Card -->
+    <div class="card mt-3">
+        <div class="card-header bg-info text-white">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Hướng dẫn</strong>
+        </div>
+        <div class="card-body">
+            <h6>✨ Tính năng mới: Một môn học có thể có nhiều giảng viên!</h6>
+            <ul class="mb-0">
+                <li><strong>Giảng viên chính:</strong> Là giảng viên chính phụ trách môn học (tùy chọn)</li>
+                <li><strong>Chọn nhiều giảng viên:</strong> Có thể chọn ngay khi tạo hoặc thêm sau</li>
+                <li><strong>Quản lý sau:</strong> Sau khi tạo môn học, vào "Quản lý giảng viên" để phân công chi tiết (lớp, nhóm, vai trò)</li>
+                <li><strong>Ví dụ:</strong> Môn "Lập trình căn bản" có thể có GV A dạy lớp A, GV B dạy lớp B</li>
+            </ul>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Khi chọn Giảng viên chính, tự động chọn trong multiple select
+            $('#FacultyId').on('change', function() {
+                var selectedId = $(this).val();
+                if (selectedId) {
+                    $('select[name="selectedFaculties"] option[value="' + selectedId + '"]').prop('selected', true);
+                }
+            });
+        });
+    </script>
 }

@@ -231,7 +231,8 @@ namespace SIMS.Controllers
                     AverageScore = e.AverageScore,
                     LetterGrade = e.LetterGrade,
                     AssignedDate = e.AssignedDate ?? e.EnrollmentDate,
-                    AssignedBy = e.AssignedByUser != null ? e.AssignedByUser.Username : "System"
+                    AssignedBy = e.AssignedByUser != null ? e.AssignedByUser.Username : "System",
+                    ScheduleId = e.ScheduleId // ✅ ADDED
                 })
                 .OrderByDescending(e => e.AssignedDate)
                 .ToListAsync();
@@ -284,9 +285,10 @@ namespace SIMS.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                int assignedCount = 0;
                 foreach (var studentId in model.StudentIds)
                 {
-                    // Check if already enrolled
+                    // Check if already enrolled in this course for this semester/year
                     var exists = await _context.Enrollments.AnyAsync(e =>
                         e.StudentId == studentId &&
                         e.CourseId == model.CourseId &&
@@ -299,6 +301,7 @@ namespace SIMS.Controllers
                         {
                             StudentId = studentId,
                             CourseId = model.CourseId,
+                            ScheduleId = model.ScheduleId, // ✅ NEW: Lớp cụ thể (nullable)
                             Semester = model.Semester,
                             AcademicYear = model.AcademicYear,
                             Status = "Active",
@@ -309,13 +312,19 @@ namespace SIMS.Controllers
                         };
 
                         _context.Enrollments.Add(enrollment);
+                        assignedCount++;
                     }
                 }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                TempData["Success"] = $"Đã phân công {model.StudentIds.Count} sinh viên vào môn học!";
+                var scheduleInfo = model.ScheduleId.HasValue 
+                    ? " vào lớp cụ thể" 
+                    : " vào môn (chưa gắn lớp)";
+
+                TempData["Success"] = $"Đã phân công {assignedCount} sinh viên{scheduleInfo}!";
+
                 return RedirectToAction(nameof(ManageEnrollments));
             }
             catch (Exception ex)
@@ -366,6 +375,26 @@ namespace SIMS.Controllers
 
             var currentUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
 
+            // ✅ Kiểm tra lớp học có tồn tại không
+            var schedule = await _context.CourseSchedules
+                .Include(s => s.Course)
+                .Include(s => s.Faculty)
+                .FirstOrDefaultAsync(s => s.Id == model.ScheduleId &&
+                                         s.CourseId == model.CourseId &&
+                                         s.Semester == model.Semester &&
+                                         s.AcademicYear == model.AcademicYear);
+
+            if (schedule == null)
+            {
+                ModelState.AddModelError("", "Lớp học không tồn tại hoặc không khớp với môn học/học kỳ đã chọn");
+                ViewBag.Courses = new SelectList(
+                    await _context.Courses.Where(c => c.IsActive).ToListAsync(),
+                    "Id", "CourseName");
+                ViewBag.Departments = Constants.Departments;
+                ViewBag.Semesters = Constants.Semesters;
+                return View(model);
+            }
+
             // Get students based on filters
             var studentsQuery = _context.Students
                 .Where(s => s.IsActive && s.Department == model.Department);
@@ -394,10 +423,10 @@ namespace SIMS.Controllers
                 int assignedCount = 0;
                 foreach (var student in students)
                 {
-                    // Check if already enrolled
+                    // ✅ Check if already enrolled in THIS SCHEDULE
                     var exists = await _context.Enrollments.AnyAsync(e =>
                         e.StudentId == student.Id &&
-                        e.CourseId == model.CourseId &&
+                        e.ScheduleId == model.ScheduleId &&
                         e.Semester == model.Semester &&
                         e.AcademicYear == model.AcademicYear);
 
@@ -407,6 +436,7 @@ namespace SIMS.Controllers
                         {
                             StudentId = student.Id,
                             CourseId = model.CourseId,
+                            ScheduleId = model.ScheduleId, // ✅ Gắn vào lớp cụ thể
                             Semester = model.Semester,
                             AcademicYear = model.AcademicYear,
                             Status = "Active",
@@ -424,7 +454,14 @@ namespace SIMS.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                TempData["Success"] = $"Đã phân công {assignedCount}/{students.Count} sinh viên vào môn học!";
+                var facultyName = schedule.Faculty != null ? schedule.Faculty.FullName : "Chưa rõ";
+                var timeInfo = $"{ScheduleHelper.GetDayName(schedule.DayOfWeek)}, {ScheduleHelper.GetTimeRange(schedule.StartPeriod, schedule.EndPeriod)}, Phòng {schedule.Room}";
+
+                TempData["Success"] = $"Đã phân công {assignedCount}/{students.Count} sinh viên vào lớp!\n" +
+                    $"Môn: {schedule.Course.CourseName}\n" +
+                    $"GV: {facultyName}\n" +
+                    $"Lịch: {timeInfo}";
+
                 return RedirectToAction(nameof(ManageEnrollments));
             }
             catch (Exception ex)
@@ -441,21 +478,62 @@ namespace SIMS.Controllers
             }
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemoveEnrollment(int id)
+        [HttpGet]
+        public async Task<IActionResult> ViewClassDetails(int scheduleId, string semester, string academicYear)
         {
-            var enrollment = await _context.Enrollments.FindAsync(id);
-            if (enrollment == null)
+            // Lấy thông tin lớp học
+            var schedule = await _context.CourseSchedules
+                .Include(s => s.Course)
+                .Include(s => s.Faculty)
+                .FirstOrDefaultAsync(s => s.Id == scheduleId);
+
+            if (schedule == null)
             {
-                return NotFound();
+                TempData["Error"] = "Không tìm thấy lớp học!";
+                return RedirectToAction(nameof(ManageEnrollments));
             }
 
-            _context.Enrollments.Remove(enrollment);
-            await _context.SaveChangesAsync();
+            // Lấy danh sách sinh viên trong lớp
+            var students = await _context.Enrollments
+                .Include(e => e.Student)
+                .Where(e => e.ScheduleId == scheduleId &&
+                           e.Semester == semester &&
+                           e.AcademicYear == academicYear)
+                .Select(e => new StudentInClassViewModel
+                {
+                    EnrollmentId = e.Id,
+                    StudentCode = e.Student.StudentCode,
+                    FullName = e.Student.FullName,
+                    Email = e.Student.Email,
+                    Phone = e.Student.Phone,
+                    Status = e.Status,
+                    MidtermScore = e.MidtermScore,
+                    FinalScore = e.FinalScore,
+                    AverageScore = e.AverageScore,
+                    LetterGrade = e.LetterGrade,
+                    EnrollmentDate = e.EnrollmentDate,
+                    Notes = e.Notes
+                })
+                .OrderBy(s => s.StudentCode)
+                .ToListAsync();
 
-            TempData["Success"] = "Đã xóa phân công thành công!";
-            return RedirectToAction(nameof(ManageEnrollments));
+            var model = new ClassDetailsViewModel
+            {
+                ScheduleId = schedule.Id,
+                CourseCode = schedule.Course.CourseCode,
+                CourseName = schedule.Course.CourseName,
+                Credits = schedule.Course.Credits,
+                FacultyName = schedule.Faculty != null ? schedule.Faculty.FullName : "Chưa phân công",
+                Semester = schedule.Semester,
+                AcademicYear = schedule.AcademicYear,
+                DayOfWeekName = ScheduleHelper.GetDayName(schedule.DayOfWeek),
+                TimeRange = ScheduleHelper.GetTimeRange(schedule.StartPeriod, schedule.EndPeriod),
+                Room = schedule.Room,
+                Notes = schedule.Notes,
+                Students = students
+            };
+
+            return View(model);
         }
 
         [HttpGet]
@@ -696,7 +774,7 @@ namespace SIMS.Controllers
         {
             var faculty = await _context.Faculties
                 .Include(f => f.User)
-                .Include(f => f.Courses)
+                .Include(f => f.CourseFaculties) // ✅ FIX: Use CourseFaculties instead of Courses
                 .FirstOrDefaultAsync(f => f.Id == id);
 
             if (faculty == null)
@@ -705,14 +783,14 @@ namespace SIMS.Controllers
             }
 
             // Kiểm tra có course không
-            if (faculty.Courses.Any())
+            if (faculty.CourseFaculties.Any())
             {
                 // Có course → chỉ khóa tài khoản (soft delete)
                 faculty.IsActive = false;
                 faculty.User.IsActive = false;
                 await _context.SaveChangesAsync();
                 
-                TempData["Warning"] = $"Giảng viên đang phụ trách {faculty.Courses.Count} môn học. Tài khoản đã được khóa thay vì xóa.";
+                TempData["Warning"] = $"Giảng viên đang phụ trách {faculty.CourseFaculties.Count} môn học. Tài khoản đã được khóa thay vì xóa.";
                 return RedirectToAction(nameof(Faculties));
             }
 
@@ -804,7 +882,7 @@ namespace SIMS.Controllers
         {
             var faculty = await _context.Faculties
                 .Include(f => f.User)
-                .Include(f => f.Courses)
+                .Include(f => f.CourseFaculties) // ✅ FIX: Use CourseFaculties instead of Courses
                 .FirstOrDefaultAsync(f => f.Id == id);
 
             if (faculty == null)
@@ -816,15 +894,12 @@ namespace SIMS.Controllers
             try
             {
                 var userId = faculty.UserId;
-                var courseCount = faculty.Courses.Count;
+                var courseCount = faculty.CourseFaculties.Count;
 
-                // Set all courses' FacultyId to null
-                if (faculty.Courses.Any())
+                // Remove CourseFaculties assignments
+                if (faculty.CourseFaculties.Any())
                 {
-                    foreach (var course in faculty.Courses)
-                    {
-                        course.FacultyId = null;
-                    }
+                    _context.CourseFaculties.RemoveRange(faculty.CourseFaculties);
                     await _context.SaveChangesAsync();
                 }
 
@@ -841,7 +916,7 @@ namespace SIMS.Controllers
                 }
 
                 await transaction.CommitAsync();
-                TempData["Success"] = $"Xóa giảng viên thành công! ({courseCount} môn học không còn giảng viên)";
+                TempData["Success"] = $"Xóa giảng viên thành công! ({courseCount} phân công môn học đã bị xóa)";
                 return RedirectToAction(nameof(Faculties));
             }
             catch (Exception ex)
@@ -1026,13 +1101,14 @@ namespace SIMS.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateCourse(CourseFormViewModel model)
+        public async Task<IActionResult> CreateCourse(CourseFormViewModel model, List<int> selectedFaculties)
         {
             if (!ModelState.IsValid)
             {
                 ViewBag.Faculties = new SelectList(
                     await _context.Faculties.Where(f => f.IsActive).ToListAsync(), 
                     "Id", "FullName");
+                ViewBag.Departments = Constants.Departments;
                 return View(model);
             }
 
@@ -1042,24 +1118,59 @@ namespace SIMS.Controllers
                 ViewBag.Faculties = new SelectList(
                     await _context.Faculties.Where(f => f.IsActive).ToListAsync(), 
                     "Id", "FullName");
+                ViewBag.Departments = Constants.Departments;
                 return View(model);
             }
 
-            var course = new Course
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                CourseCode = model.CourseCode,
-                CourseName = model.CourseName,
-                Credits = model.Credits,
-                Department = model.Department,
-                FacultyId = model.FacultyId,
-                IsActive = model.IsActive
-            };
+                // Create course (giữ FacultyId null hoặc primary faculty)
+                var course = new Course
+                {
+                    CourseCode = model.CourseCode,
+                    CourseName = model.CourseName,
+                    Credits = model.Credits,
+                    Department = model.Department,
+                    FacultyId = model.FacultyId, // Optional: Primary faculty
+                    IsActive = model.IsActive
+                };
 
-            _context.Courses.Add(course);
-            await _context.SaveChangesAsync();
+                _context.Courses.Add(course);
+                await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Thêm môn học thành công!";
-            return RedirectToAction(nameof(Courses));
+                // ✅ NEW: Assign multiple faculties
+                if (selectedFaculties != null && selectedFaculties.Any())
+                {
+                    foreach (var facultyId in selectedFaculties)
+                    {
+                        var courseFaculty = new CourseFaculty
+                        {
+                            CourseId = course.Id,
+                            FacultyId = facultyId,
+                            Role = facultyId == model.FacultyId ? "Giảng viên chính" : "Giảng viên",
+                            IsActive = true,
+                            AssignedDate = DateTime.Now
+                        };
+                        _context.CourseFaculties.Add(courseFaculty);
+                    }
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+                TempData["Success"] = "Thêm môn học thành công!";
+                return RedirectToAction(nameof(Courses));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                ViewBag.Faculties = new SelectList(
+                    await _context.Faculties.Where(f => f.IsActive).ToListAsync(), 
+                    "Id", "FullName");
+                ViewBag.Departments = Constants.Departments;
+                return View(model);
+            }
         }
 
         [HttpGet]
@@ -1099,6 +1210,7 @@ namespace SIMS.Controllers
                 ViewBag.Faculties = new SelectList(
                     await _context.Faculties.Where(f => f.IsActive).ToListAsync(), 
                     "Id", "FullName");
+                ViewBag.Departments = Constants.Departments; // ✅ THÊM DÒNG NÀY
                 return View(model);
             }
 
@@ -1123,17 +1235,705 @@ namespace SIMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteCourse(int id)
         {
-            var course = await _context.Courses.FindAsync(id);
+            var course = await _context.Courses
+                .Include(c => c.Enrollments)
+                .Include(c => c.CourseFaculties)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
             if (course == null)
             {
                 return NotFound();
             }
 
-            course.IsActive = false;
+            // Kiểm tra có lịch học không
+            var hasSchedules = await _context.CourseSchedules.AnyAsync(cs => cs.CourseId == id);
+
+            // Kiểm tra có enrollment hoặc schedule không
+            if (course.Enrollments.Any() || hasSchedules)
+            {
+                // Có data liên quan → chỉ khóa (soft delete)
+                course.IsActive = false;
+                await _context.SaveChangesAsync();
+                
+                var relatedCount = course.Enrollments.Count + (hasSchedules ? 1 : 0);
+                TempData["Warning"] = $"Môn học đã có {course.Enrollments.Count} sinh viên đăng ký" +
+                    (hasSchedules ? " và có lịch học" : "") + 
+                    ". Môn học đã được vô hiệu hóa thay vì xóa.";
+                return RedirectToAction(nameof(Courses));
+            }
+
+            // Không có data liên quan → xóa hẳn
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Xóa CourseFaculties trước (nếu có)
+                if (course.CourseFaculties.Any())
+                {
+                    _context.CourseFaculties.RemoveRange(course.CourseFaculties);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Xóa Course
+                _context.Courses.Remove(course);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                TempData["Success"] = "Xóa môn học thành công!";
+                return RedirectToAction(nameof(Courses));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                return RedirectToAction(nameof(Courses));
+            }
+        }
+
+        // Thêm method xóa hẳn (force delete)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForceDeleteCourse(int id)
+        {
+            var course = await _context.Courses
+                .Include(c => c.Enrollments)
+                .Include(c => c.CourseFaculties)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var enrollmentCount = course.Enrollments.Count;
+                var facultyCount = course.CourseFaculties.Count;
+
+                // Xóa tất cả lịch học
+                var schedules = await _context.CourseSchedules.Where(cs => cs.CourseId == id).ToListAsync();
+                if (schedules.Any())
+                {
+                    _context.CourseSchedules.RemoveRange(schedules);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Xóa tất cả enrollments
+                if (course.Enrollments.Any())
+                {
+                    _context.Enrollments.RemoveRange(course.Enrollments);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Xóa tất cả CourseFaculties
+                if (course.CourseFaculties.Any())
+                {
+                    _context.CourseFaculties.RemoveRange(course.CourseFaculties);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Xóa Course
+                _context.Courses.Remove(course);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                
+                TempData["Success"] = $"Xóa môn học thành công! " +
+                    $"(Đã xóa {enrollmentCount} đăng ký, {schedules.Count} lịch học, {facultyCount} phân công GV)";
+                return RedirectToAction(nameof(Courses));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                return RedirectToAction(nameof(Courses));
+            }
+        }
+
+        // ============================================
+        // COURSE SCHEDULE MANAGEMENT
+        // ============================================
+
+        [HttpGet]
+        public async Task<IActionResult> ManageSchedules(string semester, string academicYear, int? dayOfWeek)
+        {
+            var query = _context.CourseSchedules
+                .Include(cs => cs.Course)
+                .Include(cs => cs.Faculty) // ✅ Load giảng viên từ schedule, không phải course
+                .AsQueryable();
+
+            // Apply filters
+            var currentSemester = semester ?? Constants.CurrentSemester;
+            var currentYear = academicYear ?? Constants.CurrentAcademicYear;
+
+            query = query.Where(cs => cs.Semester == currentSemester && cs.AcademicYear == currentYear);
+
+            if (dayOfWeek.HasValue)
+            {
+                query = query.Where(cs => cs.DayOfWeek == dayOfWeek.Value);
+            }
+
+            var schedules = await query
+                .Select(cs => new ManageScheduleViewModel
+                {
+                    ScheduleId = cs.Id,
+                    CourseId = cs.CourseId,
+                    CourseCode = cs.Course.CourseCode,
+                    CourseName = cs.Course.CourseName,
+                    FacultyName = cs.Faculty != null ? cs.Faculty.FullName : "Chưa phân công", // ✅ Lấy từ schedule
+                    Semester = cs.Semester,
+                    AcademicYear = cs.AcademicYear,
+                    DayOfWeek = cs.DayOfWeek,
+                    DayName = ScheduleHelper.GetDayName(cs.DayOfWeek),
+                    StartPeriod = cs.StartPeriod,
+                    EndPeriod = cs.EndPeriod,
+                    PeriodRange = ScheduleHelper.GetPeriodRange(cs.StartPeriod, cs.EndPeriod),
+                    TimeRange = ScheduleHelper.GetTimeRange(cs.StartPeriod, cs.EndPeriod),
+                    Room = cs.Room,
+                    IsActive = cs.IsActive,
+                    EnrolledStudentsCount = _context.Enrollments.Count(e =>
+                        e.CourseId == cs.CourseId &&
+                        e.Semester == cs.Semester &&
+                        e.AcademicYear == cs.AcademicYear &&
+                        e.Status == "Active"),
+                    Notes = cs.Notes
+                })
+                .OrderBy(s => s.DayOfWeek)
+                .ThenBy(s => s.StartPeriod)
+                .ToListAsync();
+
+            ViewBag.Semester = currentSemester;
+            ViewBag.AcademicYear = currentYear;
+            ViewBag.DayOfWeek = dayOfWeek;
+            ViewBag.Semesters = Constants.Semesters;
+            ViewBag.Days = ScheduleHelper.GetAllDays();
+
+            return View(schedules);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CreateSchedule()
+        {
+            ViewBag.Courses = new SelectList(
+                await _context.Courses.Where(c => c.IsActive).ToListAsync(),
+                "Id", "CourseName");
+            ViewBag.Faculties = new SelectList(
+                await _context.Faculties.Where(f => f.IsActive).ToListAsync(),
+                "Id", "FullName");
+            ViewBag.Semesters = Constants.Semesters;
+            ViewBag.Days = ScheduleHelper.GetAllDays();
+            ViewBag.Periods = ScheduleHelper.GetAllPeriods();
+
+            var model = new CourseScheduleFormViewModel
+            {
+                Semester = Constants.CurrentSemester,
+                AcademicYear = Constants.CurrentAcademicYear,
+                IsActive = true
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateSchedule(CourseScheduleFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Courses = new SelectList(
+                    await _context.Courses.Where(c => c.IsActive).ToListAsync(),
+                    "Id", "CourseName");
+                ViewBag.Faculties = new SelectList(
+                    await _context.Faculties.Where(f => f.IsActive).ToListAsync(),
+                    "Id", "FullName");
+                ViewBag.Semesters = Constants.Semesters;
+                ViewBag.Days = ScheduleHelper.GetAllDays();
+                ViewBag.Periods = ScheduleHelper.GetAllPeriods();
+                return View(model);
+            }
+
+            // Validate periods
+            if (model.EndPeriod < model.StartPeriod)
+            {
+                ModelState.AddModelError("EndPeriod", "Tiết kết thúc phải lớn hơn hoặc bằng tiết bắt đầu");
+                ViewBag.Courses = new SelectList(
+                    await _context.Courses.Where(c => c.IsActive).ToListAsync(),
+                    "Id", "CourseName");
+                ViewBag.Faculties = new SelectList(
+                    await _context.Faculties.Where(f => f.IsActive).ToListAsync(),
+                    "Id", "FullName");
+                ViewBag.Semesters = Constants.Semesters;
+                ViewBag.Days = ScheduleHelper.GetAllDays();
+                ViewBag.Periods = ScheduleHelper.GetAllPeriods();
+                return View(model);
+            }
+
+            // Check faculty conflict
+            var facultyConflicts = await _context.CourseSchedules
+                .Include(cs => cs.Course)
+                .Where(cs =>
+                    cs.FacultyId == model.FacultyId &&
+                    cs.Semester == model.Semester &&
+                    cs.AcademicYear == model.AcademicYear &&
+                    cs.DayOfWeek == model.DayOfWeek &&
+                    cs.IsActive &&
+                    cs.Id != model.Id)
+                .ToListAsync();
+
+            foreach (var conflict in facultyConflicts)
+            {
+                if (ScheduleHelper.IsTimeConflict(
+                    conflict.DayOfWeek, conflict.StartPeriod, conflict.EndPeriod,
+                    model.DayOfWeek, model.StartPeriod, model.EndPeriod))
+                {
+                    ModelState.AddModelError(
+                        "", 
+                        $"Giảng viên đã có lịch dạy môn '{conflict.Course.CourseName}' vào {ScheduleHelper.GetTimeRange(conflict.StartPeriod, conflict.EndPeriod)}!");
+                    ViewBag.Courses = new SelectList(
+                        await _context.Courses.Where(c => c.IsActive).ToListAsync(),
+                        "Id", "CourseName");
+                    ViewBag.Faculties = new SelectList(
+                        await _context.Faculties.Where(f => f.IsActive).ToListAsync(),
+                        "Id", "FullName");
+                    ViewBag.Semesters = Constants.Semesters;
+                    ViewBag.Days = ScheduleHelper.GetAllDays();
+                    ViewBag.Periods = ScheduleHelper.GetAllPeriods();
+                    return View(model);
+                }
+            }
+
+            // Check room conflict
+            var roomConflicts = await _context.CourseSchedules
+                .Include(cs => cs.Course)
+                .Where(cs =>
+                    cs.Room == model.Room &&
+                    cs.Semester == model.Semester &&
+                    cs.AcademicYear == model.AcademicYear &&
+                    cs.DayOfWeek == model.DayOfWeek &&
+                    cs.IsActive)
+                .ToListAsync();
+
+            foreach (var conflict in roomConflicts)
+            {
+                if (ScheduleHelper.IsTimeConflict(
+                    conflict.DayOfWeek, conflict.StartPeriod, conflict.EndPeriod,
+                    model.DayOfWeek, model.StartPeriod, model.EndPeriod))
+                {
+                    ModelState.AddModelError(
+                        "Room", 
+                        $"Phòng {model.Room} đã được môn '{conflict.Course.CourseName}' sử dụng vào {ScheduleHelper.GetTimeRange(conflict.StartPeriod, conflict.EndPeriod)}!");
+                    ViewBag.Courses = new SelectList(
+                        await _context.Courses.Where(c => c.IsActive).ToListAsync(),
+                        "Id", "CourseName");
+                    ViewBag.Faculties = new SelectList(
+                        await _context.Faculties.Where(f => f.IsActive).ToListAsync(),
+                        "Id", "FullName");
+                    ViewBag.Semesters = Constants.Semesters;
+                    ViewBag.Days = ScheduleHelper.GetAllDays();
+                    ViewBag.Periods = ScheduleHelper.GetAllPeriods();
+                    return View(model);
+                }
+            }
+
+            // Create schedule
+            var schedule = new CourseSchedule
+            {
+                CourseId = model.CourseId,
+                FacultyId = model.FacultyId,
+                Semester = model.Semester,
+                AcademicYear = model.AcademicYear,
+                DayOfWeek = model.DayOfWeek,
+                StartPeriod = model.StartPeriod,
+                EndPeriod = model.EndPeriod,
+                Room = model.Room,
+                Notes = model.Notes,
+                IsActive = model.IsActive
+            };
+
+            _context.CourseSchedules.Add(schedule);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Xóa môn học thành công!";
-            return RedirectToAction(nameof(Courses));
+            TempData["Success"] = "Tạo lịch học thành công!";
+            return RedirectToAction(nameof(ManageSchedules));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditSchedule(int id)
+        {
+            var schedule = await _context.CourseSchedules.FindAsync(id);
+            if (schedule == null)
+            {
+                return NotFound();
+            }
+
+            var model = new CourseScheduleFormViewModel
+            {
+                Id = schedule.Id,
+                CourseId = schedule.CourseId,
+                FacultyId = schedule.FacultyId,
+                Semester = schedule.Semester,
+                AcademicYear = schedule.AcademicYear,
+                DayOfWeek = schedule.DayOfWeek,
+                StartPeriod = schedule.StartPeriod,
+                EndPeriod = schedule.EndPeriod,
+                Room = schedule.Room,
+                Notes = schedule.Notes,
+                IsActive = schedule.IsActive
+            };
+
+            ViewBag.Courses = new SelectList(
+                await _context.Courses.Where(c => c.IsActive).ToListAsync(),
+                "Id", "CourseName", schedule.CourseId);
+            ViewBag.Faculties = new SelectList(
+                await _context.Faculties.Where(f => f.IsActive).ToListAsync(),
+                "Id", "FullName", schedule.FacultyId);
+            ViewBag.Semesters = Constants.Semesters;
+            ViewBag.Days = ScheduleHelper.GetAllDays();
+            ViewBag.Periods = ScheduleHelper.GetAllPeriods();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditSchedule(CourseScheduleFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Courses = new SelectList(
+                    await _context.Courses.Where(c => c.IsActive).ToListAsync(),
+                    "Id", "CourseName");
+                ViewBag.Faculties = new SelectList(
+                    await _context.Faculties.Where(f => f.IsActive).ToListAsync(),
+                    "Id", "FullName");
+                ViewBag.Semesters = Constants.Semesters;
+                ViewBag.Days = ScheduleHelper.GetAllDays();
+                ViewBag.Periods = ScheduleHelper.GetAllPeriods();
+                return View(model);
+            }
+
+            var schedule = await _context.CourseSchedules.FindAsync(model.Id);
+            if (schedule == null)
+            {
+                return NotFound();
+            }
+
+            schedule.CourseId = model.CourseId;
+            schedule.FacultyId = model.FacultyId;
+            schedule.Semester = model.Semester;
+            schedule.AcademicYear = model.AcademicYear;
+            schedule.DayOfWeek = model.DayOfWeek;
+            schedule.StartPeriod = model.StartPeriod;
+            schedule.EndPeriod = model.EndPeriod;
+            schedule.Room = model.Room;
+            schedule.Notes = model.Notes;
+            schedule.IsActive = model.IsActive;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Cập nhật lịch học thành công!";
+            return RedirectToAction(nameof(ManageSchedules));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteSchedule(int id)
+        {
+            var schedule = await _context.CourseSchedules.FindAsync(id);
+            if (schedule == null)
+            {
+                return NotFound();
+            }
+
+            _context.CourseSchedules.Remove(schedule);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Xóa lịch học thành công!";
+            return RedirectToAction(nameof(ManageSchedules));
+        }
+
+        /// <summary>
+        /// API: Lấy danh sách giảng viên của một môn học
+        /// Ưu tiên giảng viên đã được phân công, nhưng cũng cho phép chọn giảng viên khác
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetCourseFaculties(int courseId)
+        {
+            // Lấy giảng viên đã được phân công cho môn này
+            var assignedFaculties = await _context.CourseFaculties
+                .Where(cf => cf.CourseId == courseId && cf.IsActive)
+                .Include(cf => cf.Faculty)
+                .Select(cf => new
+                {
+                    id = cf.FacultyId,
+                    fullName = cf.Faculty.FullName,
+                    role = cf.Role,
+                    classGroup = cf.ClassGroup,
+                    isAssigned = true
+                })
+                .ToListAsync();
+
+            // Nếu có giảng viên đã được phân công, trả về danh sách đó
+            if (assignedFaculties.Any())
+            {
+                return Json(assignedFaculties);
+            }
+
+            // Nếu chưa có, trả về TẤT CẢ giảng viên active để có thể chọn
+            var allFaculties = await _context.Faculties
+                .Where(f => f.IsActive)
+                .Select(f => new
+                {
+                    id = f.Id,
+                    fullName = f.FullName,
+                    role = "Giảng viên",
+                    classGroup = (string?)null,
+                    isAssigned = false
+                })
+                .OrderBy(f => f.fullName)
+                .ToListAsync();
+
+            return Json(allFaculties);
+        }
+
+        /// <summary>
+        /// ✅ NEW API: Lấy danh sách lớp/lịch học của một môn theo học kỳ và năm học
+        /// Dùng cho dropdown chọn lớp khi phân công sinh viên
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetCourseSchedules(int courseId, string semester, string academicYear)
+        {
+            var schedules = await _context.CourseSchedules
+                .Include(cs => cs.Faculty)
+                .Where(cs => cs.CourseId == courseId &&
+                            cs.Semester == semester &&
+                            cs.AcademicYear == academicYear &&
+                            cs.IsActive)
+                .Select(cs => new
+                {
+                    scheduleId = cs.Id,
+                    facultyName = cs.Faculty != null ? cs.Faculty.FullName : "Chưa phân công",
+                    dayOfWeek = cs.DayOfWeek,
+                    dayName = ScheduleHelper.GetDayName(cs.DayOfWeek),
+                    startPeriod = cs.StartPeriod,
+                    endPeriod = cs.EndPeriod,
+                    periodRange = ScheduleHelper.GetPeriodRange(cs.StartPeriod, cs.EndPeriod),
+                    timeRange = ScheduleHelper.GetTimeRange(cs.StartPeriod, cs.EndPeriod),
+                    room = cs.Room
+                })
+                .OrderBy(cs => cs.dayOfWeek)
+                .ThenBy(cs => cs.startPeriod)
+                .ToListAsync();
+
+            return Json(schedules);
+        }
+
+        // ============================================
+        // COURSE-FACULTY MANAGEMENT (Multiple Faculties)
+        // ============================================
+        [HttpGet]
+        public async Task<IActionResult> ManageCourseFaculties(int courseId)
+        {
+            var course = await _context.Courses
+                .Include(c => c.CourseFaculties)
+                    .ThenInclude(cf => cf.Faculty)
+                .FirstOrDefaultAsync(c => c.Id == courseId);
+
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = course.CourseFaculties
+                .Select(cf => new CourseFacultyListViewModel
+                {
+                    CourseFacultyId = cf.Id,
+                    CourseId = cf.CourseId,
+                    CourseCode = course.CourseCode,
+                    CourseName = course.CourseName,
+                    FacultyId = cf.FacultyId,
+                    FacultyCode = cf.Faculty.FacultyCode,
+                    FacultyName = cf.Faculty.FullName,
+                    Role = cf.Role,
+                    ClassGroup = cf.ClassGroup,
+                    Notes = cf.Notes,
+                    IsActive = cf.IsActive,
+                    AssignedDate = cf.AssignedDate
+                })
+                .OrderBy(cf => cf.FacultyName)
+                .ToList();
+
+            ViewBag.CourseId = courseId;
+            ViewBag.CourseCode = course.CourseCode;
+            ViewBag.CourseName = course.CourseName;
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AssignFacultyToCourse(int courseId)
+        {
+            var course = await _context.Courses.FindAsync(courseId);
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            // Get faculties not yet assigned to this course
+            var assignedFacultyIds = await _context.CourseFaculties
+                .Where(cf => cf.CourseId == courseId && cf.IsActive)
+                .Select(cf => cf.FacultyId)
+                .ToListAsync();
+
+            var availableFaculties = await _context.Faculties
+                .Where(f => f.IsActive && !assignedFacultyIds.Contains(f.Id))
+                .ToListAsync();
+
+            ViewBag.Faculties = new SelectList(availableFaculties, "Id", "FullName");
+            ViewBag.CourseId = courseId;
+            ViewBag.CourseCode = course.CourseCode;
+            ViewBag.CourseName = course.CourseName;
+
+            var model = new AssignFacultyToCourseViewModel
+            {
+                CourseId = courseId
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignFacultyToCourse(AssignFacultyToCourseViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var course = await _context.Courses.FindAsync(model.CourseId);
+                var assignedFacultyIds = await _context.CourseFaculties
+                    .Where(cf => cf.CourseId == model.CourseId && cf.IsActive)
+                    .Select(cf => cf.FacultyId)
+                    .ToListAsync();
+
+                var availableFaculties = await _context.Faculties
+                    .Where(f => f.IsActive && !assignedFacultyIds.Contains(f.Id))
+                    .ToListAsync();
+
+                ViewBag.Faculties = new SelectList(availableFaculties, "Id", "FullName");
+                ViewBag.CourseId = model.CourseId;
+                ViewBag.CourseCode = course?.CourseCode;
+                ViewBag.CourseName = course?.CourseName;
+
+                return View(model);
+            }
+
+            try
+            {
+                foreach (var facultyId in model.FacultyIds)
+                {
+                    // Check if already assigned
+                    var exists = await _context.CourseFaculties.AnyAsync(cf =>
+                        cf.CourseId == model.CourseId &&
+                        cf.FacultyId == facultyId &&
+                        cf.IsActive);
+
+                    if (!exists)
+                    {
+                        var courseFaculty = new CourseFaculty
+                        {
+                            CourseId = model.CourseId,
+                            FacultyId = facultyId,
+                            Role = model.Role,
+                            ClassGroup = model.ClassGroup,
+                            Notes = model.Notes,
+                            IsActive = true,
+                            AssignedDate = DateTime.Now
+                        };
+
+                        _context.CourseFaculties.Add(courseFaculty);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Đã phân công {model.FacultyIds.Count} giảng viên vào môn học!";
+                return RedirectToAction(nameof(ManageCourseFaculties), new { courseId = model.CourseId });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+
+                var course = await _context.Courses.FindAsync(model.CourseId);
+                var assignedFacultyIds = await _context.CourseFaculties
+                    .Where(cf => cf.CourseId == model.CourseId && cf.IsActive)
+                    .Select(cf => cf.FacultyId)
+                    .ToListAsync();
+
+                var availableFaculties = await _context.Faculties
+                    .Where(f => f.IsActive && !assignedFacultyIds.Contains(f.Id))
+                    .ToListAsync();
+
+                ViewBag.Faculties = new SelectList(availableFaculties, "Id", "FullName");
+                ViewBag.CourseId = model.CourseId;
+                ViewBag.CourseCode = course?.CourseCode;
+                ViewBag.CourseName = course?.CourseName;
+
+                return View(model);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveCourseFaculty(int id, int courseId)
+        {
+            var courseFaculty = await _context.CourseFaculties.FindAsync(id);
+            if (courseFaculty == null)
+            {
+                return NotFound();
+            }
+
+            _context.CourseFaculties.Remove(courseFaculty);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Đã xóa giảng viên khỏi môn học!";
+            return RedirectToAction(nameof(ManageCourseFaculties), new { courseId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveEnrollment(int id)
+        {
+            try
+            {
+                var enrollment = await _context.Enrollments
+                    .Include(e => e.Student)
+                    .Include(e => e.Course)
+                    .FirstOrDefaultAsync(e => e.Id == id);
+
+                if (enrollment == null)
+                {
+                    TempData["Error"] = "Không tìm thấy phân công!";
+                    return RedirectToAction(nameof(ManageEnrollments));
+                }
+
+                // Kiểm tra xem sinh viên đã có điểm chưa
+                if (enrollment.MidtermScore.HasValue || enrollment.FinalScore.HasValue || enrollment.AverageScore.HasValue)
+                {
+                    TempData["Warning"] = $"Không thể xóa! Sinh viên {enrollment.Student.StudentCode} đã có điểm.";
+                    return RedirectToAction(nameof(ManageEnrollments));
+                }
+
+                // Xóa enrollment
+                _context.Enrollments.Remove(enrollment);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Đã xóa phân công của sinh viên {enrollment.Student.StudentCode} - {enrollment.Course.CourseName}";
+                return RedirectToAction(nameof(ManageEnrollments));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                return RedirectToAction(nameof(ManageEnrollments));
+            }
         }
     }
 }

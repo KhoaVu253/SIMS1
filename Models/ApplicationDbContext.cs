@@ -14,6 +14,8 @@ namespace SIMS.Models
         public DbSet<Faculty> Faculties { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
+        public DbSet<CourseSchedule> CourseSchedules { get; set; }
+        public DbSet<CourseFaculty> CourseFaculties { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -75,6 +77,44 @@ namespace SIMS.Models
                 .WithMany()
                 .HasForeignKey(e => e.AssignedByUserId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            // Configure CourseSchedule
+            modelBuilder.Entity<CourseSchedule>()
+                .HasOne(cs => cs.Course)
+                .WithMany()
+                .HasForeignKey(cs => cs.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CourseSchedule>()
+                .HasOne(cs => cs.Faculty)
+                .WithMany()
+                .HasForeignKey(cs => cs.FacultyId)
+                .OnDelete(DeleteBehavior.Restrict); // Không xóa schedule khi xóa faculty
+
+            // Index for faster queries
+            modelBuilder.Entity<CourseSchedule>()
+                .HasIndex(cs => new { cs.Semester, cs.AcademicYear, cs.DayOfWeek, cs.IsActive });
+
+            modelBuilder.Entity<CourseSchedule>()
+                .HasIndex(cs => cs.FacultyId);
+
+            // Configure CourseFaculty (Many-to-Many)
+            modelBuilder.Entity<CourseFaculty>()
+                .HasOne(cf => cf.Course)
+                .WithMany(c => c.CourseFaculties)
+                .HasForeignKey(cf => cf.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CourseFaculty>()
+                .HasOne(cf => cf.Faculty)
+                .WithMany(f => f.CourseFaculties)
+                .HasForeignKey(cf => cf.FacultyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique constraint: Một giảng viên không thể được phân công 2 lần cho cùng môn/nhóm
+            modelBuilder.Entity<CourseFaculty>()
+                .HasIndex(cf => new { cf.CourseId, cf.FacultyId, cf.ClassGroup })
+                .IsUnique();
 
             // Seed initial data
             SeedData(modelBuilder);

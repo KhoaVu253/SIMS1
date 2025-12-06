@@ -1,0 +1,312 @@
+@model SIMS.Models.ViewModels.ClassDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết lớp học";
+}
+
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2>
+                <i class="bi bi-book-half"></i>
+                Chi tiết lớp học
+            </h2>
+            <p class="text-muted mb-0">@Model.CourseCode - @Model.CourseName</p>
+        </div>
+        <a asp-action="ManageEnrollments" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<!-- Thông tin lớp học -->
+<div class="row g-4 mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-info-circle me-2"></i>
+                Thông tin lớp học
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="bi bi-book text-primary"></i>
+                            <div>
+                                <small class="text-muted">Mã môn học</small>
+                                <strong class="d-block">@Model.CourseCode</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="bi bi-journal-text text-primary"></i>
+                            <div>
+                                <small class="text-muted">Tên môn học</small>
+                                <strong class="d-block">@Model.CourseName</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="bi bi-person-badge text-primary"></i>
+                            <div>
+                                <small class="text-muted">Giảng viên</small>
+                                <strong class="d-block">@Model.FacultyName</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="bi bi-award text-primary"></i>
+                            <div>
+                                <small class="text-muted">Số tín chỉ</small>
+                                <strong class="d-block">@Model.Credits TC</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="bi bi-calendar-week text-primary"></i>
+                            <div>
+                                <small class="text-muted">Thời gian học</small>
+                                <strong class="d-block">@Model.DayOfWeekName, @Model.TimeRange</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="bi bi-geo-alt text-primary"></i>
+                            <div>
+                                <small class="text-muted">Phòng học</small>
+                                <strong class="d-block">@Model.Room</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="bi bi-calendar3 text-primary"></i>
+                            <div>
+                                <small class="text-muted">Học kỳ</small>
+                                <strong class="d-block">@Model.Semester - @Model.AcademicYear</strong>
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="col-12">
+                            <div class="info-item">
+                                <i class="bi bi-sticky text-primary"></i>
+                                <div>
+                                    <small class="text-muted">Ghi chú</small>
+                                    <p class="mb-0">@Model.Notes</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê -->
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-graph-up me-2"></i>
+                Thống kê lớp học
+            </div>
+            <div class="card-body">
+                <div class="stat-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-people-fill text-primary"></i> Tổng sinh viên</span>
+                        <strong class="fs-5 text-primary">@Model.TotalStudents</strong>
+                    </div>
+                </div>
+                <div class="stat-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-check-circle-fill text-success"></i> Đang học</span>
+                        <strong class="text-success">@Model.ActiveStudents</strong>
+                    </div>
+                </div>
+                <div class="stat-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-trophy-fill text-info"></i> Hoàn thành</span>
+                        <strong class="text-info">@Model.CompletedStudents</strong>
+                    </div>
+                </div>
+                <div class="stat-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-x-circle-fill text-secondary"></i> Rút môn</span>
+                        <strong class="text-secondary">@Model.DroppedStudents</strong>
+                    </div>
+                </div>
+                <hr />
+                <div class="stat-item">
+                    <div class="text-center">
+                        <small class="text-muted d-block">Điểm TB lớp</small>
+                        <strong class="fs-4 text-primary">@Model.AverageClassScore.ToString("F2")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Danh sách sinh viên -->
+<div class="card">
+    <div class="card-header bg-navy text-white">
+        <i class="bi bi-people-fill me-2"></i>
+        Danh sách sinh viên (@Model.TotalStudents)
+    </div>
+    <div class="card-body">
+        @if (!Model.Students.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                <p class="mt-3">Chưa có sinh viên nào trong lớp này</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã SV</th>
+                            <th>Họ và tên</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Điểm giữa kỳ</th>
+                            <th class="text-center">Điểm cuối kỳ</th>
+                            <th class="text-center">Điểm TB</th>
+                            <th class="text-center">Xếp loại</th>
+                            <th>Ngày đăng ký</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int stt = 1;
+                        }
+                        @foreach (var student in Model.Students)
+                        {
+                            <tr>
+                                <td>@stt</td>
+                                <td><strong class="text-navy">@student.StudentCode</strong></td>
+                                <td>@student.FullName</td>
+                                <td>
+                                    <small><i class="bi bi-envelope"></i> @student.Email</small>
+                                </td>
+                                <td>
+                                    <small><i class="bi bi-telephone"></i> @student.Phone</small>
+                                </td>
+                                <td>
+                                    @if (student.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">Đang học</span>
+                                    }
+                                    else if (student.Status == "Completed")
+                                    {
+                                        <span class="badge bg-primary">Hoàn thành</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Rút môn</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (student.MidtermScore.HasValue)
+                                    {
+                                        <strong>@student.MidtermScore.Value.ToString("F2")</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (student.FinalScore.HasValue)
+                                    {
+                                        <strong>@student.FinalScore.Value.ToString("F2")</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (student.AverageScore.HasValue)
+                                    {
+                                        <strong class="text-primary fs-6">@student.AverageScore.Value.ToString("F2")</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(student.LetterGrade))
+                                    {
+                                        var badgeClass = student.LetterGrade switch
+                                        {
+                                            "A+" or "A" => "bg-success",
+                                            "B+" or "B" => "bg-info",
+                                            "C+" or "C" => "bg-warning",
+                                            "D+" or "D" => "bg-secondary",
+                                            _ => "bg-danger"
+                                        };
+                                        <span class="badge @badgeClass">@student.LetterGrade</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <small>@student.EnrollmentDate.ToString("dd/MM/yyyy")</small>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .info-item {
+        display: flex;
+        align-items-start;
+        gap: 12px;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .info-item i {
+        font-size: 1.5rem;
+        margin-top: 4px;
+    }
+
+    .stat-item {
+        padding: 8px 12px;
+        border-left: 3px solid #dee2e6;
+    }
+
+    .bg-navy {
+        background-color: #2c3e50 !important;
+    }
+
+    .text-navy {
+        color: #2c3e50 !important;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+</style>

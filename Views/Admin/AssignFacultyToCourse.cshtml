@@ -1,0 +1,115 @@
+@model SIMS.Models.ViewModels.AssignFacultyToCourseViewModel
+@{
+    ViewData["Title"] = "Phân công giảng viên";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-plus me-2"></i>
+                        Phân công giảng viên
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Môn học:</strong> @ViewBag.CourseName (@ViewBag.CourseCode)
+                    </div>
+
+                    <form asp-action="AssignFacultyToCourse" method="post">
+                        <input type="hidden" asp-for="CourseId" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label class="form-label required">
+                                <i class="bi bi-people me-1"></i>
+                                Chọn giảng viên
+                            </label>
+                            <select name="FacultyIds" class="form-select" multiple size="8" required>
+                                @foreach (var faculty in ViewBag.Faculties as SelectList)
+                                {
+                                    <option value="@faculty.Value">@faculty.Text</option>
+                                }
+                            </select>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều giảng viên
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Role" class="form-label"></label>
+                            <select asp-for="Role" class="form-select">
+                                <option value="Giảng viên">Giảng viên</option>
+                                <option value="Giảng viên chính">Giảng viên chính</option>
+                                <option value="Trợ giảng">Trợ giảng</option>
+                                <option value="Giảng viên thỉnh giảng">Giảng viên thỉnh giảng</option>
+                            </select>
+                            <span asp-validation-for="Role" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ClassGroup" class="form-label"></label>
+                            <input asp-for="ClassGroup" class="form-control" 
+                                   placeholder="VD: Lớp A, Nhóm 1, Lớp K62..." />
+                            <span asp-validation-for="ClassGroup" class="text-danger"></span>
+                            <small class="text-muted">Tùy chọn: Phân biệt lớp/nhóm giảng viên phụ trách</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Notes" class="form-label"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="2" 
+                                      placeholder="Ghi chú thêm..."></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i> Phân công
+                            </button>
+                            <a asp-action="ManageCourseFaculties" asp-route-courseId="@Model.CourseId" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-1"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Hướng dẫn</strong>
+                </div>
+                <div class="card-body">
+                    <h6>Phân công nhiều giảng viên cho một môn học:</h6>
+                    <ul class="mb-0">
+                        <li><strong>Vai trò:</strong> Phân biệt giảng viên chính, phụ, trợ giảng</li>
+                        <li><strong>Lớp/Nhóm:</strong> Giúp phân biệt giảng viên dạy lớp nào</li>
+                        <li><strong>Ví dụ:</strong> 
+                            <ul>
+                                <li>GV A - Giảng viên chính - Lớp A</li>
+                                <li>GV B - Giảng viên - Lớp B</li>
+                                <li>GV C - Trợ giảng - Hỗ trợ Lab</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+</style>

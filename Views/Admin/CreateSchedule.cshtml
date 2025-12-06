@@ -1,0 +1,280 @@
+@model SIMS.Models.ViewModels.CourseScheduleFormViewModel
+@{
+    ViewData["Title"] = "Thêm lịch học";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Thêm lịch học mới
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateSchedule" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="row">
+                            <!-- Course -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CourseId" class="form-label required"></label>
+                                <select asp-for="CourseId" class="form-select" asp-items="ViewBag.Courses" id="courseSelect">
+                                    <option value="">-- Chọn môn học --</option>
+                                </select>
+                                <span asp-validation-for="CourseId" class="text-danger"></span>
+                            </div>
+
+                            <!-- Faculty -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FacultyId" class="form-label required">
+                                    <i class="bi bi-person me-1"></i>
+                                    Giảng viên
+                                </label>
+                                <select asp-for="FacultyId" class="form-select" asp-items="ViewBag.Faculties" id="facultySelect">
+                                    <option value="">-- Chọn giảng viên --</option>
+                                </select>
+                                <span asp-validation-for="FacultyId" class="text-danger"></span>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Chọn giảng viên dạy buổi học này
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Semester -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Semester" class="form-label required"></label>
+                                <select asp-for="Semester" class="form-select">
+                                    @foreach (var sem in ViewBag.Semesters as string[])
+                                    {
+                                        <option value="@sem">@sem</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Semester" class="text-danger"></span>
+                            </div>
+
+                            <!-- Academic Year -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="AcademicYear" class="form-label required"></label>
+                                <input asp-for="AcademicYear" class="form-control" placeholder="2024-2025" />
+                                <span asp-validation-for="AcademicYear" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-clock me-2"></i>
+                                    Thời gian học
+                                </h6>
+                                <div class="row">
+                                    <!-- Day of Week -->
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="DayOfWeek" class="form-label required"></label>
+                                        <select asp-for="DayOfWeek" class="form-select">
+                                            <option value="">-- Chọn thứ --</option>
+                                            @foreach (var day in ViewBag.Days as List<(int Value, string Name)>)
+                                            {
+                                                <option value="@day.Value">@day.Name</option>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="DayOfWeek" class="text-danger"></span>
+                                    </div>
+
+                                    <!-- Start Period -->
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="StartPeriod" class="form-label required"></label>
+                                        <select asp-for="StartPeriod" class="form-select" id="startPeriod">
+                                            <option value="">-- Chọn tiết --</option>
+                                            @foreach (var period in ViewBag.Periods as List<int>)
+                                            {
+                                                <option value="@period">
+                                                    Tiết @period (@SIMS.Helpers.ScheduleHelper.GetPeriodStartTime(period))
+                                                </option>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="StartPeriod" class="text-danger"></span>
+                                    </div>
+
+                                    <!-- End Period -->
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="EndPeriod" class="form-label required"></label>
+                                        <select asp-for="EndPeriod" class="form-select" id="endPeriod">
+                                            <option value="">-- Chọn tiết --</option>
+                                            @foreach (var period in ViewBag.Periods as List<int>)
+                                            {
+                                                <option value="@period">
+                                                    Tiết @period (@SIMS.Helpers.ScheduleHelper.GetPeriodEndTime(period))
+                                                </option>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="EndPeriod" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Time Preview -->
+                                <div class="alert alert-info mb-0" id="timePreview" style="display: none;">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Thời gian học:</strong> <span id="timeText"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Room - PHẦN BỊ THIẾU! -->
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Room" class="form-label required">
+                                    <i class="bi bi-door-closed me-1"></i>
+                                    Phòng học
+                                </label>
+                                <input asp-for="Room" class="form-control" placeholder="VD: A101, B205, C301..." />
+                                <span asp-validation-for="Room" class="text-danger"></span>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Nhập mã phòng học (VD: A101 cho Phòng 101 nhà A)
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label asp-for="Notes" class="form-label"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="2" 
+                                      placeholder="Ghi chú thêm về lịch học..."></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+
+                        <!-- IsActive -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                <label asp-for="IsActive" class="form-check-label">
+                                    Kích hoạt lịch học ngay
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i> Tạo lịch học
+                            </button>
+                            <a asp-action="ManageSchedules" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-1"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Hướng dẫn</strong>
+                </div>
+                <div class="card-body">
+                    <h6>Quy định về tiết học:</h6>
+                    <ul class="mb-3">
+                        <li><strong>Buổi sáng:</strong> Tiết 1-6 (07:00 - 12:20)</li>
+                        <li><strong>Buổi chiều:</strong> Tiết 7-12 (13:00 - 18:20)</li>
+                        <li>Mỗi tiết học dài 50 phút</li>
+                        <li>Không nên sắp xếp quá 5 tiết liên tục</li>
+                    </ul>
+                    <h6>Hệ thống sẽ kiểm tra:</h6>
+                    <ul class="mb-0">
+                        <li><i class="bi bi-check-circle text-success"></i> Trùng lịch giảng viên</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Trùng phòng học</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Tính hợp lệ của tiết học</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Load faculties when course is selected
+            $('#courseSelect').on('change', function() {
+                var courseId = $(this).val();
+                if (courseId) {
+                    $.ajax({
+                        url: '@Url.Action("GetCourseFaculties", "Admin")',
+                        type: 'GET',
+                        data: { courseId: courseId },
+                        success: function(data) {
+                            var facultySelect = $('#facultySelect');
+                            facultySelect.empty();
+                            facultySelect.append('<option value="">-- Chọn giảng viên --</option>');
+                            
+                            if (data.length === 0) {
+                                facultySelect.append('<option value="" disabled>Môn này chưa có giảng viên</option>');
+                            } else {
+                                $.each(data, function(i, faculty) {
+                                    var optionText = faculty.fullName;
+                                    if (faculty.classGroup) {
+                                        optionText += ' (' + faculty.classGroup + ')';
+                                    }
+                                    if (faculty.role && faculty.role !== 'Giảng viên') {
+                                        optionText += ' - ' + faculty.role;
+                                    }
+                                    facultySelect.append($('<option></option>')
+                                        .attr('value', faculty.id)
+                                        .text(optionText));
+                                });
+                            }
+                        },
+                        error: function() {
+                            alert('Không thể tải danh sách giảng viên');
+                        }
+                    });
+                } else {
+                    $('#facultySelect').empty().append('<option value="">-- Chọn giảng viên --</option>');
+                }
+            });
+
+            // Update time preview
+            function updateTimePreview() {
+                var startPeriod = $('#startPeriod').val();
+                var endPeriod = $('#endPeriod').val();
+                
+                if (startPeriod && endPeriod) {
+                    var startTime = $('#startPeriod option:selected').text().match(/\(([^)]+)\)/)[1];
+                    var endTime = $('#endPeriod option:selected').text().match(/\(([^)]+)\)/)[1];
+                    
+                    $('#timeText').text(startTime + ' - ' + endTime);
+                    $('#timePreview').show();
+                } else {
+                    $('#timePreview').hide();
+                }
+            }
+
+            $('#startPeriod, #endPeriod').on('change', updateTimePreview);
+
+            // Validate end period >= start period
+            $('#endPeriod').on('change', function() {
+                var start = parseInt($('#startPeriod').val());
+                var end = parseInt($(this).val());
+                
+                if (start && end && end < start) {
+                    alert('Tiết kết thúc phải lớn hơn hoặc bằng tiết bắt đầu!');
+                    $(this).val('');
+                }
+            });
+        });
+    </script>
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+</style>

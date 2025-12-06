@@ -63,17 +63,33 @@
                                     }
                                 </td>
                                 <td class="text-center">
-                                    <a asp-action="EditCourse" asp-route-id="@course.Id" 
-                                       class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form asp-action="DeleteCourse" asp-route-id="@course.Id" 
-                                          method="post" class="d-inline"
-                                          onsubmit="return confirm('Bạn có chắc muốn xóa môn học này?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a asp-action="ManageCourseFaculties" asp-route-courseId="@course.Id" 
+                                           class="btn btn-outline-success" title="Quản lý giảng viên">
+                                            <i class="bi bi-people"></i>
+                                        </a>
+                                        <a asp-action="EditCourse" asp-route-id="@course.Id" 
+                                           class="btn btn-outline-primary" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        @if (course.IsActive)
+                                        {
+                                            <form asp-action="DeleteCourse" asp-route-id="@course.Id" 
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc muốn xóa môn học này?\n\nLưu ý: Nếu môn có sinh viên hoặc lịch học, môn sẽ bị vô hiệu hóa thay vì xóa hoàn toàn.');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Đã vô hiệu hóa">
+                                                <i class="bi bi-lock"></i>
+                                            </button>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }
