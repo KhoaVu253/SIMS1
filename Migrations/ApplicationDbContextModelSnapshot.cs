@@ -61,7 +61,7 @@ namespace SIMS.Migrations
 
                     b.HasIndex("FacultyId");
 
-                    b.ToTable("Courses");
+                    b.ToTable("Courses", (string)null);
 
                     b.HasData(
                         new
@@ -137,7 +137,7 @@ namespace SIMS.Migrations
                         .IsUnique()
                         .HasFilter("[ClassGroup] IS NOT NULL");
 
-                    b.ToTable("CourseFaculties");
+                    b.ToTable("CourseFaculties", (string)null);
                 });
 
             modelBuilder.Entity("SIMS.Models.CourseSchedule", b =>
@@ -196,7 +196,7 @@ namespace SIMS.Migrations
 
                     b.HasIndex("Semester", "AcademicYear", "DayOfWeek", "IsActive");
 
-                    b.ToTable("CourseSchedules");
+                    b.ToTable("CourseSchedules", (string)null);
                 });
 
             modelBuilder.Entity("SIMS.Models.Enrollment", b =>
@@ -261,7 +261,7 @@ namespace SIMS.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("Enrollments");
+                    b.ToTable("Enrollments", (string)null);
                 });
 
             modelBuilder.Entity("SIMS.Models.Faculty", b =>
@@ -311,7 +311,7 @@ namespace SIMS.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Faculties");
+                    b.ToTable("Faculties", (string)null);
 
                     b.HasData(
                         new
@@ -382,7 +382,7 @@ namespace SIMS.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Students");
+                    b.ToTable("Students", (string)null);
 
                     b.HasData(
                         new
@@ -431,7 +431,7 @@ namespace SIMS.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new

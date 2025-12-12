@@ -3,62 +3,62 @@ using System.ComponentModel.DataAnnotations;
 namespace SIMS.Models.ViewModels
 {
     // =============================================
-    // ADMIN: Quản lý lịch học
+    // ADMIN: Schedule Management
     // =============================================
 
     /// <summary>
-    /// Form tạo/sửa lịch học cho Admin
+    /// Form to create/edit schedule for Admin
     /// </summary>
     public class CourseScheduleFormViewModel
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng chọn môn học")]
-        [Display(Name = "Môn học")]
+        [Required(ErrorMessage = "Please select a course")]
+        [Display(Name = "Course")]
         public int CourseId { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng chọn giảng viên")]
-        [Display(Name = "Giảng viên")]
+        [Required(ErrorMessage = "Please select a faculty")]
+        [Display(Name = "Faculty")]
         public int FacultyId { get; set; }
 
-        [Required(ErrorMessage = "Học kỳ là bắt buộc")]
-        [Display(Name = "Học kỳ")]
+        [Required(ErrorMessage = "Semester is required")]
+        [Display(Name = "Semester")]
         public string Semester { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Năm học là bắt buộc")]
-        [Display(Name = "Năm học")]
+        [Required(ErrorMessage = "Academic year is required")]
+        [Display(Name = "Academic Year")]
         public string AcademicYear { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Vui lòng chọn thứ")]
-        [Range(2, 8, ErrorMessage = "Thứ phải từ 2 đến 8")]
-        [Display(Name = "Thứ")]
+        [Required(ErrorMessage = "Please select day of week")]
+        [Range(2, 8, ErrorMessage = "Day of week must be between 2 and 8")]
+        [Display(Name = "Day of Week")]
         public int DayOfWeek { get; set; }
 
-        [Required(ErrorMessage = "Tiết bắt đầu là bắt buộc")]
-        [Range(1, 12, ErrorMessage = "Tiết từ 1 đến 12")]
-        [Display(Name = "Tiết bắt đầu")]
+        [Required(ErrorMessage = "Start period is required")]
+        [Range(1, 12, ErrorMessage = "Period must be between 1 and 12")]
+        [Display(Name = "Start Period")]
         public int StartPeriod { get; set; }
 
-        [Required(ErrorMessage = "Tiết kết thúc là bắt buộc")]
-        [Range(1, 12, ErrorMessage = "Tiết từ 1 đến 12")]
-        [Display(Name = "Tiết kết thúc")]
+        [Required(ErrorMessage = "End period is required")]
+        [Range(1, 12, ErrorMessage = "Period must be between 1 and 12")]
+        [Display(Name = "End Period")]
         public int EndPeriod { get; set; }
 
-        [Required(ErrorMessage = "Phòng học là bắt buộc")]
+        [Required(ErrorMessage = "Room is required")]
         [StringLength(50)]
-        [Display(Name = "Phòng học")]
+        [Display(Name = "Room")]
         public string Room { get; set; } = string.Empty;
 
         [StringLength(500)]
-        [Display(Name = "Ghi chú")]
+        [Display(Name = "Notes")]
         public string? Notes { get; set; }
 
-        [Display(Name = "Trạng thái")]
+        [Display(Name = "Status")]
         public bool IsActive { get; set; } = true;
     }
 
     /// <summary>
-    /// Danh sách lịch học cho Admin
+    /// Schedule list for Admin
     /// </summary>
     public class ManageScheduleViewModel
     {
@@ -82,11 +82,11 @@ namespace SIMS.Models.ViewModels
     }
 
     // =============================================
-    // STUDENT: Xem lịch học
+    // STUDENT: View Schedule
     // =============================================
 
     /// <summary>
-    /// Lịch học theo tuần của sinh viên
+    /// Weekly schedule for student
     /// </summary>
     public class StudentWeeklyScheduleViewModel
     {
@@ -96,23 +96,23 @@ namespace SIMS.Models.ViewModels
         public string AcademicYear { get; set; } = string.Empty;
 
         /// <summary>
-        /// Lịch học từ Thứ 2 đến Chủ nhật
+        /// Schedule from Monday to Sunday
         /// </summary>
         public List<DaySchedule> WeekSchedule { get; set; } = new();
 
         /// <summary>
-        /// Tổng số môn đang học
+        /// Total number of courses being taken
         /// </summary>
         public int TotalCourses { get; set; }
 
         /// <summary>
-        /// Tổng số buổi học trong tuần
+        /// Total number of classes per week
         /// </summary>
         public int TotalClassesPerWeek { get; set; }
     }
 
     /// <summary>
-    /// ✅ NEW: Lịch dạy theo tuần của giảng viên
+    /// Weekly teaching schedule for faculty
     /// </summary>
     public class FacultyWeeklyScheduleViewModel
     {
@@ -122,35 +122,35 @@ namespace SIMS.Models.ViewModels
         public string AcademicYear { get; set; } = string.Empty;
 
         /// <summary>
-        /// Lịch dạy từ Thứ 2 đến Chủ nhật
+        /// Teaching schedule from Monday to Sunday
         /// </summary>
         public List<DaySchedule> WeekSchedule { get; set; } = new();
 
         /// <summary>
-        /// Tổng số môn đang dạy
+        /// Total number of courses being taught
         /// </summary>
         public int TotalCourses { get; set; }
 
         /// <summary>
-        /// Tổng số buổi dạy trong tuần
+        /// Total number of teaching sessions per week
         /// </summary>
         public int TotalClassesPerWeek { get; set; }
     }
 
     /// <summary>
-    /// Lịch học trong một ngày
+    /// Schedule for one day
     /// </summary>
     public class DaySchedule
     {
         public int DayOfWeek { get; set; } // 2-8
-        public string DayName { get; set; } = string.Empty; // "Thứ hai"
-        public string DayAbbr { get; set; } = string.Empty; // "T2"
+        public string DayName { get; set; } = string.Empty; // "Monday"
+        public string DayAbbr { get; set; } = string.Empty; // "Mon"
         public List<ScheduleItem> Classes { get; set; } = new();
         public bool HasClass => Classes.Any();
     }
 
     /// <summary>
-    /// Chi tiết một buổi học
+    /// Details of one class session
     /// </summary>
     public class ScheduleItem
     {
@@ -158,15 +158,15 @@ namespace SIMS.Models.ViewModels
         public int CourseId { get; set; }
         public string CourseCode { get; set; } = string.Empty;
         public string CourseName { get; set; } = string.Empty;
-        public int DayOfWeek { get; set; } // ✅ ADDED: Thứ (2-8)
+        public int DayOfWeek { get; set; } // Day (2-8)
         public int StartPeriod { get; set; }
         public int EndPeriod { get; set; }
-        public string PeriodRange { get; set; } = string.Empty; // "Tiết 1-3"
+        public string PeriodRange { get; set; } = string.Empty; // "Period 1-3"
         public string TimeRange { get; set; } = string.Empty; // "07:00 - 09:30"
         public string Room { get; set; } = string.Empty;
         public string FacultyName { get; set; } = string.Empty;
         public int Credits { get; set; }
-        public string SessionType { get; set; } = string.Empty; // "Sáng" / "Chiều"
+        public string SessionType { get; set; } = string.Empty; // "Morning" / "Afternoon"
         public string ColorClass { get; set; } = string.Empty; // CSS class for color
         public string? Notes { get; set; }
     }
@@ -176,7 +176,7 @@ namespace SIMS.Models.ViewModels
     // =============================================
 
     /// <summary>
-    /// Thông tin xung đột lịch
+    /// Schedule conflict information
     /// </summary>
     public class ScheduleConflict
     {

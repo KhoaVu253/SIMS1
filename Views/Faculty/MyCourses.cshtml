@@ -1,19 +1,19 @@
 @model IEnumerable<SIMS.Models.Course>
 @{
-    ViewData["Title"] = "Môn học của tôi";
+    ViewData["Title"] = "My Courses";
 }
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
-            <h2><i class="bi bi-journals"></i> Môn học của tôi</h2>
+            <h2><i class="bi bi-journals"></i> My Courses</h2>
         </div>
     </div>
 
     @if (!Model.Any())
     {
         <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Bạn chưa được phân công môn học nào.
+            <i class="bi bi-info-circle"></i> You have not been assigned any courses yet.
         </div>
     }
     else
@@ -29,24 +29,24 @@
                         <div class="card-body">
                             <h6 class="card-title">@course.CourseName</h6>
                             <div class="mb-2">
-                                <span class="badge bg-info">@course.Credits tín chỉ</span>
+                                <span class="badge bg-info">@course.Credits Credits</span>
                                 <span class="badge bg-secondary">@course.Department</span>
                             </div>
                             <hr />
                             <p class="mb-1">
                                 <i class="bi bi-people"></i>
-                                <strong>Sinh viên đăng ký:</strong> @course.Enrollments.Count
+                                <strong>Enrolled Students:</strong> @course.Enrollments.Count
                             </p>
                         </div>
                         <div class="card-footer bg-transparent">
                             <div class="d-grid gap-2">
                                 <a asp-action="EnrolledStudents" asp-route-courseId="@course.Id" 
                                    class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-list-ul"></i> Danh sách SV
+                                    <i class="bi bi-list-ul"></i> Student List
                                 </a>
                                 <a asp-action="EnterGrades" asp-route-courseId="@course.Id" 
                                    class="btn btn-primary btn-sm">
-                                    <i class="bi bi-pencil-square"></i> Nhập điểm
+                                    <i class="bi bi-pencil-square"></i> Enter Grades
                                 </a>
                             </div>
                         </div>

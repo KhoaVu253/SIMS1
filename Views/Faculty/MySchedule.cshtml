@@ -1,15 +1,15 @@
 @model SIMS.Models.ViewModels.FacultyWeeklyScheduleViewModel
 @{
-    ViewData["Title"] = "Lịch dạy của tôi";
+    ViewData["Title"] = "My Teaching Schedule";
 }
 
 <div class="page-header">
     <h2>
         <i class="bi bi-calendar-week"></i>
-        Lịch dạy theo tuần
+        Weekly Teaching Schedule
     </h2>
     <p class="text-muted">
-        Giảng viên: <strong class="text-navy">@Model.FacultyName</strong> (@Model.FacultyCode)
+        Faculty: <strong class="text-navy">@Model.FacultyName</strong> (@Model.FacultyCode)
     </p>
 </div>
 
@@ -18,7 +18,7 @@
     <div class="card-body">
         <form method="get" asp-action="MySchedule" class="row g-3">
             <div class="col-md-3">
-                <label class="form-label">Học kỳ</label>
+                <label class="form-label">Semester</label>
                 <select name="semester" class="form-select">
                     @foreach (var sem in ViewBag.Semesters as string[])
                     {
@@ -27,12 +27,12 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Năm học</label>
+                <label class="form-label">Academic Year</label>
                 <input type="text" name="academicYear" class="form-control" value="@ViewBag.AcademicYear" placeholder="2024-2025" />
             </div>
             <div class="col-md-3 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search"></i> Xem lịch
+                    <i class="bi bi-search"></i> View Schedule
                 </button>
             </div>
         </form>
@@ -45,7 +45,7 @@
         <div class="card border-primary">
             <div class="card-body text-center">
                 <h3 class="text-primary mb-0">@Model.TotalCourses</h3>
-                <small class="text-muted">Môn học đang dạy</small>
+                <small class="text-muted">Courses Currently Teaching</small>
             </div>
         </div>
     </div>
@@ -53,7 +53,7 @@
         <div class="card border-success">
             <div class="card-body text-center">
                 <h3 class="text-success mb-0">@Model.TotalClassesPerWeek</h3>
-                <small class="text-muted">Buổi học trong tuần</small>
+                <small class="text-muted">Classes Per Week</small>
             </div>
         </div>
     </div>
@@ -71,7 +71,7 @@
 {
     <div class="alert alert-info">
         <i class="bi bi-info-circle me-2"></i>
-        <strong>Chưa có lịch dạy!</strong> Bạn chưa được phân công lịch dạy trong học kỳ này.
+        <strong>No Teaching Schedule Yet!</strong> You have not been assigned a teaching schedule for this semester.
     </div>
 }
 else
@@ -80,14 +80,14 @@ else
     <div class="card">
         <div class="card-header bg-navy text-white">
             <i class="bi bi-calendar-week me-2"></i>
-            Lịch dạy tuần - @Model.Semester (@Model.AcademicYear)
+            Weekly Teaching Schedule - @Model.Semester (@Model.AcademicYear)
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-bordered schedule-table mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 12%">Tiết / Thứ</th>
+                            <th style="width: 12%">Period / Day</th>
                             @foreach (var day in Model.WeekSchedule)
                             {
                                 <th class="text-center">
@@ -102,7 +102,7 @@ else
                         {
                             <tr>
                                 <td class="period-cell">
-                                    <strong>Tiết @period</strong>
+                                    <strong>Period @period</strong>
                                     <br />
                                     <small class="text-muted">
                                         @if (period <= 6)
@@ -132,8 +132,8 @@ else
                                                 <div class="course-name">@classInPeriod.CourseName</div>
                                                 <div class="schedule-details">
                                                     <i class="bi bi-clock"></i> @classInPeriod.TimeRange<br />
-                                                    <i class="bi bi-door-open"></i> Phòng @classInPeriod.Room<br />
-                                                    <i class="bi bi-mortarboard"></i> @classInPeriod.Credits TC
+                                                    <i class="bi bi-door-open"></i> Room @classInPeriod.Room<br />
+                                                    <i class="bi bi-mortarboard"></i> @classInPeriod.Credits Credits
                                                 </div>
                                                 @if (!string.IsNullOrEmpty(classInPeriod.Notes))
                                                 {
@@ -160,18 +160,18 @@ else
     <!-- Legend -->
     <div class="card mt-3">
         <div class="card-body">
-            <h6 class="mb-3">Chú thích:</h6>
+            <h6 class="mb-3">Legend:</h6>
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge schedule-morning" style="width: 20px; height: 20px;"></span>
-                        <span>Buổi sáng (Tiết 1-6)</span>
+                        <span>Morning (Period 1-6)</span>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge schedule-afternoon" style="width: 20px; height: 20px;"></span>
-                        <span>Buổi chiều (Tiết 7-12)</span>
+                        <span>Afternoon (Period 7-12)</span>
                     </div>
                 </div>
             </div>

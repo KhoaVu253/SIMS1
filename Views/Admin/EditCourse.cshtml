@@ -1,12 +1,12 @@
 @model SIMS.Models.ViewModels.CourseFormViewModel
 @{
-    ViewData["Title"] = "Chỉnh sửa môn học";
+    ViewData["Title"] = "Edit Course";
 }
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
-            <h2><i class="bi bi-pencil"></i> Chỉnh sửa môn học</h2>
+            <h2><i class="bi bi-pencil"></i> Edit Course</h2>
         </div>
     </div>
 
@@ -39,10 +39,10 @@
                     <div class="col-md-4">
                         <label asp-for="Department" class="form-label">
                             <i class="bi bi-building me-1"></i>
-                            Khoa
+                            Department
                         </label>
                         <select asp-for="Department" class="form-select">
-                            <option value="">-- Chọn khoa --</option>
+                            <option value="">-- Select Department --</option>
                             @foreach (var dept in ViewBag.Departments as string[])
                             {
                                 <option value="@dept">@dept</option>
@@ -54,7 +54,7 @@
                     <div class="col-md-4">
                         <label asp-for="FacultyId" class="form-label"></label>
                         <select asp-for="FacultyId" class="form-select" asp-items="ViewBag.Faculties">
-                            <option value="">-- Chọn giảng viên --</option>
+                            <option value="">-- Select Faculty --</option>
                         </select>
                         <span asp-validation-for="FacultyId" class="text-danger"></span>
                     </div>
@@ -69,10 +69,10 @@
                     <div class="col-12">
                         <hr />
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Cập nhật
+                            <i class="bi bi-save"></i> Update
                         </button>
                         <a asp-action="Courses" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Hủy
+                            <i class="bi bi-x-circle"></i> Cancel
                         </a>
                     </div>
                 </div>

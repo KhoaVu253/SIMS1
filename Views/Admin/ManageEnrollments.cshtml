@@ -1,14 +1,14 @@
 @model IEnumerable<SIMS.Models.ViewModels.EnrollmentListViewModel>
 @{
-    ViewData["Title"] = "Quản lý phân công lớp học";
+    ViewData["Title"] = "Manage Class Assignments";
 }
 
 <div class="page-header">
     <h2>
         <i class="bi bi-calendar-check"></i>
-        Quản lý phân công lớp học
+        Manage Class Assignments
     </h2>
-    <p class="text-muted">Phân công và quản lý sinh viên trong các lớp học</p>
+    <p class="text-muted">Assign and manage students in classes</p>
 </div>
 
 <div class="row mb-4">
@@ -16,20 +16,20 @@
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <i class="bi bi-lightning-fill me-2"></i>
-                Thao tác nhanh
+                Quick Actions
             </div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <a asp-action="AssignStudents" class="btn btn-primary btn-lg w-100">
                             <i class="bi bi-person-plus-fill me-2"></i>
-                            Phân công sinh viên vào lớp
+                            Assign Students to Class
                         </a>
                     </div>
                     <div class="col-md-6">
                         <a asp-action="BulkAssign" class="btn btn-warning btn-lg w-100">
                             <i class="bi bi-people-fill me-2"></i>
-                            Phân công hàng loạt theo khoa/lớp
+                            Bulk Assign by Department/Class
                         </a>
                     </div>
                 </div>
@@ -42,9 +42,9 @@
     <div class="card-body">
         <form method="get" class="row g-3">
             <div class="col-md-3">
-                <label class="form-label"><i class="bi bi-calendar3 me-1"></i> Học kỳ</label>
+                <label class="form-label"><i class="bi bi-calendar3 me-1"></i> Semester</label>
                 <select name="semester" class="form-select" onchange="this.form.submit()">
-                    <option value="">-- Tất cả --</option>
+                    <option value="">-- All --</option>
                     @foreach (var sem in ViewBag.Semesters as string[])
                     {
                         <option value="@sem" selected="@(ViewBag.Semester == sem)">@sem</option>
@@ -52,19 +52,19 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label"><i class="bi bi-calendar-range me-1"></i> Năm học</label>
+                <label class="form-label"><i class="bi bi-calendar-range me-1"></i> Academic Year</label>
                 <input type="text" name="academicYear" class="form-control" 
                        placeholder="2024-2025" value="@ViewBag.AcademicYear">
             </div>
             <div class="col-md-4">
-                <label class="form-label"><i class="bi bi-book me-1"></i> Môn học</label>
+                <label class="form-label"><i class="bi bi-book me-1"></i> Course</label>
                 <select name="courseId" class="form-select" asp-items="ViewBag.Courses">
-                    <option value="">-- Tất cả --</option>
+                    <option value="">-- All --</option>
                 </select>
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary me-2 w-100">
-                    <i class="bi bi-search"></i> Lọc
+                    <i class="bi bi-search"></i> Filter
                 </button>
             </div>
         </form>
@@ -74,23 +74,23 @@
 <div class="card">
     <div class="card-header">
         <i class="bi bi-list-ul me-2"></i>
-        Danh sách phân công (@Model.Count())
+        Assignment List (@Model.Count())
     </div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>STT</th>
-                        <th><i class="bi bi-person me-1"></i> Mã SV</th>
-                        <th>Họ tên</th>
-                        <th><i class="bi bi-book me-1"></i> Môn học</th>
-                        <th><i class="bi bi-calendar me-1"></i> Học kỳ</th>
-                        <th>Trạng thái</th>
-                        <th>Điểm TB</th>
-                        <th>Phân công bởi</th>
-                        <th>Ngày phân công</th>
-                        <th class="text-center">Thao tác</th>
+                        <th>No.</th>
+                        <th><i class="bi bi-person me-1"></i> Student ID</th>
+                        <th>Full Name</th>
+                        <th><i class="bi bi-book me-1"></i> Course</th>
+                        <th><i class="bi bi-calendar me-1"></i> Semester</th>
+                        <th>Status</th>
+                        <th>Average</th>
+                        <th>Assigned By</th>
+                        <th>Assigned Date</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -99,7 +99,7 @@
                         <tr>
                             <td colspan="10" class="text-center text-muted py-4">
                                 <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                                <p class="mb-0 mt-2">Chưa có phân công nào</p>
+                                <p class="mb-0 mt-2">No assignments yet</p>
                             </td>
                         </tr>
                     }
@@ -122,15 +122,15 @@
                                 <td>
                                     @if (item.Status == "Active")
                                     {
-                                        <span class="badge bg-success">Đang học</span>
+                                        <span class="badge bg-success">Active</span>
                                     }
                                     else if (item.Status == "Completed")
                                     {
-                                        <span class="badge bg-primary">Hoàn thành</span>
+                                        <span class="badge bg-primary">Completed</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">Rút môn</span>
+                                        <span class="badge bg-secondary">Dropped</span>
                                     }
                                 </td>
                                 <td>
@@ -141,7 +141,7 @@
                                     }
                                     else
                                     {
-                                        <span class="text-muted">Chưa có</span>
+                                        <span class="text-muted">No Grade</span>
                                     }
                                 </td>
                                 <td>
@@ -159,17 +159,17 @@
                                            asp-route-semester="@item.Semester"
                                            asp-route-academicYear="@item.AcademicYear"
                                            class="btn btn-sm btn-outline-info me-1" 
-                                           title="Xem chi tiết lớp">
+                                           title="View Class Details">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     }
                                     
-                                    <!-- Xóa phân công -->
+                                    <!-- Remove Enrollment -->
                                     <form asp-action="RemoveEnrollment" asp-route-id="@item.Id" 
                                           method="post" class="d-inline"
-                                          onsubmit="return confirm('Xóa phân công này?');">
+                                          onsubmit="return confirm('Delete this assignment?');">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa phân công">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Assignment">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -187,13 +187,13 @@
 <div class="card mt-3">
     <div class="card-header bg-info text-white">
         <i class="bi bi-info-circle me-2"></i>
-        Hướng dẫn
+        Guidelines
     </div>
     <div class="card-body">
         <ul class="mb-0">
-            <li><strong>Phân công sinh viên:</strong> Chọn sinh viên cụ thể để phân công vào lớp</li>
-            <li><strong>Phân công hàng loạt:</strong> Phân công toàn bộ sinh viên theo khoa/lớp vào môn học</li>
-            <li><strong>Xóa phân công:</strong> Chỉ xóa được khi sinh viên chưa có điểm</li>
+            <li><strong>Assign Students:</strong> Select specific students to assign to class</li>
+            <li><strong>Bulk Assign:</strong> Assign all students by department/class to course</li>
+            <li><strong>Delete Assignment:</strong> Can only delete when student has no grades</li>
         </ul>
     </div>
 </div>

@@ -1,24 +1,24 @@
 @model SIMS.Models.Faculty
 @{
-    ViewData["Title"] = "Dashboard Giảng viên";
+    ViewData["Title"] = "Faculty Dashboard";
 }
 
 <div class="page-header">
     <h2>
         <i class="bi bi-speedometer2"></i>
-        Dashboard Giảng viên
+        Faculty Dashboard
     </h2>
-    <p class="text-muted">Xin chào, <strong class="text-navy">@Model.FullName</strong>!</p>
+    <p class="text-muted">Hello, <strong class="text-navy">@Model.FullName</strong>!</p>
 </div>
 
 <div class="row g-4 mb-4">
     <div class="col-md-6">
         <div class="stat-card stat-card-navy">
             <i class="bi bi-journals icon"></i>
-            <h6>Môn học phụ trách</h6>
+            <h6>Teaching Courses</h6>
             <h2>@ViewBag.TotalCourses</h2>
             <a asp-action="MyCourses" class="text-white text-decoration-none mt-2 d-inline-block">
-                <small>Xem chi tiết <i class="bi bi-arrow-right"></i></small>
+                <small>View Details <i class="bi bi-arrow-right"></i></small>
             </a>
         </div>
     </div>
@@ -26,9 +26,9 @@
     <div class="col-md-6">
         <div class="stat-card stat-card-blue">
             <i class="bi bi-people-fill icon"></i>
-            <h6>Tổng sinh viên</h6>
+            <h6>Total Students</h6>
             <h2>@ViewBag.TotalStudents</h2>
-            <small class="text-white d-block mt-2">Đã đăng ký môn học</small>
+            <small class="text-white d-block mt-2">Enrolled in Courses</small>
         </div>
     </div>
 </div>
@@ -38,7 +38,7 @@
         <div class="card">
             <div class="card-header">
                 <i class="bi bi-person-circle me-2"></i>
-                Thông tin cá nhân
+                Personal Information
             </div>
             <div class="card-body">
                 <div class="row">
@@ -46,7 +46,7 @@
                         <div class="d-flex align-items-start gap-3">
                             <i class="bi bi-card-heading text-navy" style="font-size: 1.5rem;"></i>
                             <div>
-                                <small class="text-muted d-block">Mã giảng viên</small>
+                                <small class="text-muted d-block">Faculty Code</small>
                                 <strong>@Model.FacultyCode</strong>
                             </div>
                         </div>
@@ -55,7 +55,7 @@
                         <div class="d-flex align-items-start gap-3">
                             <i class="bi bi-person-fill text-navy" style="font-size: 1.5rem;"></i>
                             <div>
-                                <small class="text-muted d-block">Họ và tên</small>
+                                <small class="text-muted d-block">Full Name</small>
                                 <strong>@Model.FullName</strong>
                             </div>
                         </div>
@@ -73,7 +73,7 @@
                         <div class="d-flex align-items-start gap-3">
                             <i class="bi bi-telephone-fill text-navy" style="font-size: 1.5rem;"></i>
                             <div>
-                                <small class="text-muted d-block">Số điện thoại</small>
+                                <small class="text-muted d-block">Phone Number</small>
                                 <strong>@Model.Phone</strong>
                             </div>
                         </div>
@@ -82,7 +82,7 @@
                         <div class="d-flex align-items-start gap-3">
                             <i class="bi bi-building text-navy" style="font-size: 1.5rem;"></i>
                             <div>
-                                <small class="text-muted d-block">Khoa</small>
+                                <small class="text-muted d-block">Department</small>
                                 <strong>@Model.Department</strong>
                             </div>
                         </div>
@@ -96,17 +96,17 @@
         <div class="card">
             <div class="card-header">
                 <i class="bi bi-lightning-fill me-2"></i>
-                Truy cập nhanh
+                Quick Access
             </div>
             <div class="card-body">
                 <div class="d-grid gap-3">
                     <a asp-action="MyCourses" class="btn btn-outline-primary d-flex align-items-center justify-content-start gap-2">
                         <i class="bi bi-journals"></i>
-                        Môn học của tôi
+                        My Courses
                     </a>
                     <a asp-action="MySchedule" class="btn btn-outline-success d-flex align-items-center justify-content-start gap-2">
                         <i class="bi bi-calendar-week"></i>
-                        Lịch dạy của tôi
+                        My Teaching Schedule
                     </a>
                 </div>
             </div>

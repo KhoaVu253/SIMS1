@@ -14,32 +14,32 @@ namespace SIMS.Helpers
         public const float MidtermWeight = 0.4f;
         public const float FinalWeight = 0.6f;
 
-        // Current Semester (có thể lấy từ config hoặc database)
+        // Current Semester (can be loaded from config or database)
         public const string CurrentSemester = "HK1";
         public const string CurrentAcademicYear = "2024-2025";
 
         // Semesters
         public static readonly string[] Semesters = new[]
         {
-            "HK1", // Học kỳ 1
-            "HK2", // Học kỳ 2
-            "HK3"  // Học kỳ hè
+            "HK1", // Semester 1
+            "HK2", // Semester 2
+            "HK3"  // Summer Semester
         };
 
         // Enrollment Status
         public static readonly string[] EnrollmentStatuses = new[]
         {
-            "Active",    // Đang học
-            "Completed", // Hoàn thành
-            "Dropped"    // Rút môn
+            "Active",    // Active
+            "Completed", // Completed
+            "Dropped"    // Dropped
         };
 
         // Departments - Fixed 3 departments
         public static readonly string[] Departments = new[]
         {
-            "Công Nghệ Thông Tin",
-            "Kinh Tế",
-            "Thiết Kế Đồ Họa"
+            "Information Technology",
+            "Economics",
+            "Graphic Design"
         };
 
         // Grade Scale
@@ -63,9 +63,9 @@ namespace SIMS.Helpers
         public const float MaxScore = 10;
 
         // UI Messages
-        public const string SuccessMessage = "Thao tác thành công!";
-        public const string ErrorMessage = "Có lỗi xảy ra. Vui lòng thử lại!";
-        public const string DeleteConfirmMessage = "Bạn có chắc chắn muốn xóa?";
-        public const string SaveConfirmMessage = "Bạn có chắc chắn muốn lưu?";
+        public const string SuccessMessage = "Operation successful!";
+        public const string ErrorMessage = "An error occurred. Please try again!";
+        public const string DeleteConfirmMessage = "Are you sure you want to delete?";
+        public const string SaveConfirmMessage = "Are you sure you want to save?";
     }
 }

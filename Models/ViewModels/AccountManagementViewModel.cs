@@ -18,31 +18,31 @@ namespace SIMS.Models.ViewModels
     {
         public int UserId { get; set; }
         
-        [Display(Name = "Tên đăng nhập")]
+        [Display(Name = "Username")]
         public string Username { get; set; } = string.Empty;
         
-        [Display(Name = "Họ tên")]
+        [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Mật khẩu mới là bắt buộc")]
-        [MinLength(6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự")]
-        [Display(Name = "Mật khẩu mới")]
+        [Required(ErrorMessage = "New password is required")]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
+        [Display(Name = "New Password")]
         public string NewPassword { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Xác nhận mật khẩu là bắt buộc")]
-        [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp")]
-        [Display(Name = "Xác nhận mật khẩu")]
+        [Required(ErrorMessage = "Password confirmation is required")]
+        [Compare("NewPassword", ErrorMessage = "Password confirmation does not match")]
+        [Display(Name = "Confirm Password")]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 
     public class BulkResetPasswordViewModel
     {
-        [Display(Name = "Danh sách User IDs")]
+        [Display(Name = "User ID List")]
         public List<int> UserIds { get; set; } = new();
 
-        [Required(ErrorMessage = "Mật khẩu mới là bắt buộc")]
-        [MinLength(6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự")]
-        [Display(Name = "Mật khẩu mới cho tất cả")]
+        [Required(ErrorMessage = "New password is required")]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
+        [Display(Name = "New Password for All")]
         public string NewPassword { get; set; } = string.Empty;
     }
 }

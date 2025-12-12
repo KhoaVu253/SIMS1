@@ -6,32 +6,32 @@ namespace SIMS.Models.ViewModels
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Mã giảng viên là bắt buộc")]
-        [Display(Name = "Mã giảng viên")]
+        [Required(ErrorMessage = "Faculty code is required")]
+        [Display(Name = "Faculty Code")]
         public string FacultyCode { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Họ tên là bắt buộc")]
-        [Display(Name = "Họ và tên")]
+        [Required(ErrorMessage = "Full name is required")]
+        [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Email là bắt buộc")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
         [Display(Name = "Email")]
         public string Email { get; set; } = string.Empty;
 
-        [Display(Name = "Số điện thoại")]
+        [Display(Name = "Phone Number")]
         [Phone]
         public string Phone { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Khoa là bắt buộc")]
-        [Display(Name = "Khoa")]
+        [Required(ErrorMessage = "Department is required")]
+        [Display(Name = "Department")]
         public string Department { get; set; } = string.Empty;
 
-        [Display(Name = "Mật khẩu")]
+        [Display(Name = "Password")]
         [DataType(DataType.Password)]
         public string? Password { get; set; }
 
-        [Display(Name = "Trạng thái hoạt động")]
+        [Display(Name = "Active Status")]
         public bool IsActive { get; set; } = true;
     }
 }

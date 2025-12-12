@@ -29,13 +29,34 @@ namespace SIMS.Models
         public DateTime EnrollmentDate { get; set; } = DateTime.Now;
 
         [StringLength(20)]
-        public string Status { get; set; } = "Active"; // Active, Completed, Dropped
+        public string Status { get; set; } = "Active"; // Active, Completed, Failed, Retaking, Dropped
 
         // Grades
         public float? MidtermScore { get; set; }
         public float? FinalScore { get; set; }
         public float? AverageScore { get; set; }
         public string? LetterGrade { get; set; }
+
+        // ✅ NEW: Fail/Retake tracking
+        /// <summary>
+        /// True nếu môn học bị trượt (AverageScore < 5.0)
+        /// </summary>
+        public bool IsFailed { get; set; } = false;
+
+        /// <summary>
+        /// True nếu đang học lại môn đã trượt
+        /// </summary>
+        public bool IsRetaking { get; set; } = false;
+
+        /// <summary>
+        /// ID của enrollment gốc (nếu đây là enrollment học lại)
+        /// </summary>
+        public int? OriginalEnrollmentId { get; set; }
+
+        /// <summary>
+        /// Số lần đã học lại môn này (0 = lần đầu, 1 = học lại lần 1, ...)
+        /// </summary>
+        public int RetakeCount { get; set; } = 0;
 
         // Assigned by Admin (không phải sinh viên tự đăng ký)
         public int? AssignedByUserId { get; set; }
@@ -49,5 +70,8 @@ namespace SIMS.Models
         public Course Course { get; set; } = null!;
         public CourseSchedule? Schedule { get; set; } // ✅ NEW: Lớp cụ thể
         public User? AssignedByUser { get; set; }
+        
+        // ✅ NEW: Self-referencing for retake
+        public Enrollment? OriginalEnrollment { get; set; }
     }
 }

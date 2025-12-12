@@ -8,6 +8,11 @@ namespace SIMS.Services
         float CalculateTotalScore(float? midterm, float? final);
         string CalculateLetterGrade(float totalScore);
         float CalculateGPA(IEnumerable<Grade> grades);
+        
+        // ✅ NEW: Methods for fail/pass logic
+        bool IsPassed(float averageScore);
+        string GetEnrollmentStatus(float? averageScore, string currentStatus);
+        (bool IsFailed, string Status, string LetterGrade) EvaluateEnrollment(float? averageScore);
     }
 
     public class GradeCalculationService : IGradeCalculationService
@@ -44,6 +49,38 @@ namespace SIMS.Services
                 return 0;
 
             return validGrades.Average(g => g.TotalScore!.Value);
+        }
+
+        // ✅ NEW: Check if student passed (score >= 5.0)
+        public bool IsPassed(float averageScore)
+        {
+            return averageScore >= 5.0f;
+        }
+
+        // ✅ NEW: Get enrollment status based on score
+        public string GetEnrollmentStatus(float? averageScore, string currentStatus)
+        {
+            // Nếu chưa có điểm, giữ nguyên status hiện tại
+            if (!averageScore.HasValue)
+                return currentStatus;
+
+            // Nếu đã có điểm
+            return averageScore.Value < 5.0f ? "Failed" : "Completed";
+        }
+
+        // ✅ NEW: Comprehensive evaluation
+        public (bool IsFailed, string Status, string LetterGrade) EvaluateEnrollment(float? averageScore)
+        {
+            if (!averageScore.HasValue)
+            {
+                return (false, "Active", string.Empty);
+            }
+
+            var letterGrade = CalculateLetterGrade(averageScore.Value);
+            var isFailed = averageScore.Value < 5.0f;
+            var status = isFailed ? "Failed" : "Completed";
+
+            return (isFailed, status, letterGrade);
         }
     }
 }

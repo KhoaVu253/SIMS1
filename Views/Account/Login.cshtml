@@ -8,15 +8,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đăng nhập - SIMS</title>
+    <title>Đăng nhập - BTEC FPT SIMS</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        :root {
-            --primary-navy: #1e3a5f;
-            --accent-gold: #d4af37;
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -24,153 +19,222 @@
         }
         
         body {
-            background: linear-gradient(135deg, #0f2537 0%, #1e3a5f 50%, #2c5282 100%);
-            min-height: 100vh;
+            font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .login-page-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            position: relative;
-            overflow: hidden;
-            padding: 20px;
-        }
-        
-        /* Animated background circles - more subtle */
-        body::before {
-            content: '';
-            position: absolute;
-            top: -30%;
-            right: -15%;
-            width: 60%;
-            height: 60%;
-            background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
-            animation: float 20s ease-in-out infinite;
-        }
-        
-        body::after {
-            content: '';
-            position: absolute;
-            bottom: -30%;
-            left: -15%;
-            width: 60%;
-            height: 60%;
-            background: radial-gradient(circle, rgba(212, 175, 55, 0.06) 0%, transparent 70%);
-            animation: float 25s ease-in-out infinite reverse;
-        }
-        
-        @@keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(15px, 15px) scale(1.05); }
-        }
-        
-        .login-container {
+            height: 100vh;
             width: 100%;
-            max-width: 380px;
+        }
+        
+        /* LEFT PANEL - 60% WIDTH */
+        .login-left-panel {
+            width: 60%;
+            /* Background Image với Overlay tối để text dễ đọc */
+            background-image: 
+                linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(30, 58, 95, 0.7) 100%),
+                url('/images/btec-fpt-background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             position: relative;
-            z-index: 10;
-        }
-        
-        .login-card {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-            backdrop-filter: blur(10px);
-        }
-        
-        @@keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .login-header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #0f2537 100%);
-            color: white;
-            padding: 2.5rem 2rem 2rem;
-            text-align: center;
-            position: relative;
+            padding: 3rem 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 100vh;
             overflow: hidden;
         }
         
-        .login-header::before {
+        .login-left-panel::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.3;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
         }
         
-        .login-header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+        .logo-section {
+            position: relative;
+            z-index: 3;
         }
         
-        .login-header .icon {
-            width: 70px;
-            height: 70px;
-            background: rgba(212, 175, 55, 0.15);
-            border-radius: 50%;
+        .btec-logo-container {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            border: 2.5px solid var(--accent-gold);
-            position: relative;
-            animation: pulse 2s ease-in-out infinite;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
         }
         
-        @@keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
-            50% { box-shadow: 0 0 0 12px rgba(212, 175, 55, 0); }
+        .btec-logo-graphic {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
         }
         
-        .login-header .icon i {
-            font-size: 2.2rem;
-            color: var(--accent-gold);
+        .btec-dot {
+            width: 8px;
+            height: 8px;
+            background: #FF6B35;
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
         }
         
-        .login-header h2 {
-            margin: 0;
+        .btec-dot:nth-child(1) { animation-delay: 0s; opacity: 0.6; }
+        .btec-dot:nth-child(2) { animation-delay: 0.2s; opacity: 0.8; }
+        .btec-dot:nth-child(3) { animation-delay: 0.4s; opacity: 1; }
+        
+        @@keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: inherit; }
+            50% { transform: scale(1.3); opacity: 1; }
+        }
+        
+        .btec-logo-text {
+            font-size: 2.5rem;
             font-weight: 700;
-            font-size: 1.8rem;
-            letter-spacing: 1.5px;
+            color: #FF6B35;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
+        }
+        
+        .branding-section {
+            position: relative;
+            z-index: 3;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .university-name {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+            line-height: 1.2;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .university-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        .university-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.95);
+            max-width: 550px;
+            margin-top: 1.5rem;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .team-info-section {
+            position: relative;
+            z-index: 3;
+            margin-top: auto;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .team-label {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 107, 53, 0.2);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+        
+        .team-badge i {
+            color: #FF6B35;
+            font-size: 1.1rem;
+        }
+        
+        .team-name {
+            font-size: 1.2rem;
+            color: #ffffff;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .project-name {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 0.5rem;
+        }
+        
+        /* RIGHT PANEL - 40% WIDTH */
+        .login-right-panel {
+            width: 40%;
+            background: #ffffff;
+            padding: 3rem 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
             position: relative;
         }
         
-        .login-header p {
-            margin: 0.5rem 0 0 0;
-            opacity: 0.9;
-            font-size: 0.88rem;
-            font-weight: 400;
-            position: relative;
+        .login-form-container {
+            max-width: 400px;
+            width: 100%;
+            margin: 0 auto;
+            animation: fadeInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
-        .login-body {
-            padding: 2rem 2rem 2.5rem;
+        @@keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-subtitle {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-bottom: 2rem;
         }
         
         .form-group {
-            margin-bottom: 1.4rem;
+            margin-bottom: 1.5rem;
         }
         
         .form-label {
             font-weight: 600;
-            color: #2c3e50;
+            color: #334155;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
@@ -179,29 +243,28 @@
         }
         
         .form-label i {
-            color: var(--accent-gold);
+            color: #FF6B35;
             font-size: 1rem;
         }
         
         .form-control {
-            border: 2px solid #e8ecef;
+            border: 2px solid #e2e8f0;
             border-radius: 10px;
             padding: 0.75rem 1rem;
             font-size: 0.95rem;
             transition: all 0.3s ease;
-            background-color: #f8f9fa;
+            background-color: #f8fafc;
         }
         
         .form-control:focus {
-            border-color: var(--primary-navy);
-            box-shadow: 0 0 0 0.2rem rgba(30, 58, 95, 0.1);
-            background-color: white;
-            transform: translateY(-1px);
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+            background-color: #ffffff;
+            outline: none;
         }
         
         .form-control::placeholder {
-            color: #adb5bd;
-            font-size: 0.9rem;
+            color: #94a3b8;
         }
         
         .form-check {
@@ -212,13 +275,17 @@
             width: 1.1rem;
             height: 1.1rem;
             margin-top: 0.15rem;
-            border: 2px solid #dee2e6;
+            border: 2px solid #cbd5e1;
             cursor: pointer;
         }
         
         .form-check-input:checked {
-            background-color: var(--primary-navy);
-            border-color: var(--primary-navy);
+            background-color: #FF6B35;
+            border-color: #FF6B35;
+        }
+        
+        .form-check-input:focus {
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
         }
         
         .form-check-label {
@@ -226,63 +293,34 @@
             cursor: pointer;
             user-select: none;
             font-size: 0.9rem;
+            color: #475569;
         }
         
         .btn-login {
             width: 100%;
             padding: 0.85rem;
-            background: linear-gradient(135deg, #1e3a5f 0%, #0f2537 100%);
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFB84D 100%);
             border: none;
             border-radius: 10px;
             color: white;
-            font-weight: 700;
+            font-weight: 600;
             font-size: 1rem;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
             cursor: pointer;
-        }
-        
-        .btn-login::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(212, 175, 55, 0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(30, 58, 95, 0.35);
-        }
-        
-        .btn-login:hover::before {
-            width: 350px;
-            height: 350px;
-        }
-        
-        .btn-login:active {
-            transform: translateY(0);
-        }
-        
-        .btn-login span {
-            position: relative;
-            z-index: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
         }
         
-        .text-danger {
-            font-size: 0.825rem;
-            margin-top: 0.3rem;
-            display: block;
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+            background: linear-gradient(135deg, #E55A2B 0%, #FF6B35 50%, #FF8C42 100%);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
         }
         
         .alert {
@@ -300,7 +338,7 @@
         @@keyframes slideDown {
             from {
                 opacity: 0;
-                transform: translateY(-8px);
+                transform: translateY(-10px);
             }
             to {
                 opacity: 1;
@@ -309,98 +347,170 @@
         }
         
         .alert-danger {
-            background-color: #fee;
-            color: #c33;
-            border-left: 3px solid #c33;
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-left: 3px solid #ef4444;
+        }
+        
+        .text-danger {
+            font-size: 0.825rem;
+            margin-top: 0.3rem;
+            display: block;
+            color: #dc2626;
         }
         
         .footer-text {
             text-align: center;
             margin-top: 1.5rem;
-            color: #6c757d;
+            color: #94a3b8;
             font-size: 0.85rem;
         }
         
-        .footer-text i {
-            color: var(--accent-gold);
-            margin-right: 0.3rem;
+        /* RESPONSIVE DESIGN */
+        @@media (max-width: 1024px) {
+            .login-left-panel {
+                width: 50%;
+                padding: 2.5rem 3rem;
+            }
+            
+            .login-right-panel {
+                width: 50%;
+                padding: 2.5rem 3rem;
+            }
+            
+            .university-name {
+                font-size: 2.5rem;
+            }
+            
+            .university-description {
+                font-size: 1rem;
+            }
         }
         
-        /* Responsive */
+        @@media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+            }
+            
+            .login-page-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .login-left-panel {
+                width: 100%;
+                min-height: auto;
+                padding: 2rem;
+            }
+            
+            .btec-logo-text {
+                font-size: 2rem;
+            }
+            
+            .university-name {
+                font-size: 2rem;
+            }
+            
+            .university-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .university-description {
+                font-size: 0.95rem;
+                line-height: 1.6;
+            }
+            
+            .team-info-section {
+                margin-top: 2rem;
+                padding-top: 1.5rem;
+            }
+            
+            .login-right-panel {
+                width: 100%;
+                min-height: auto;
+                padding: 2rem;
+            }
+            
+            .login-title {
+                font-size: 1.75rem;
+            }
+        }
+        
         @@media (max-width: 480px) {
-            .login-container {
-                max-width: 100%;
-                padding: 0 10px;
+            .login-left-panel {
+                padding: 1.5rem;
             }
             
-            .login-header {
-                padding: 2rem 1.5rem 1.5rem;
+            .login-right-panel {
+                padding: 1.5rem;
             }
             
-            .login-header .icon {
-                width: 60px;
-                height: 60px;
+            .btec-logo-text {
+                font-size: 1.75rem;
             }
             
-            .login-header .icon i {
-                font-size: 1.8rem;
+            .university-name {
+                font-size: 1.75rem;
             }
             
-            .login-header h2 {
-                font-size: 1.5rem;
+            .university-subtitle {
+                font-size: 1rem;
             }
             
-            .login-header p {
-                font-size: 0.82rem;
-            }
-            
-            .login-body {
-                padding: 1.5rem 1.5rem 2rem;
-            }
-            
-            .form-control {
-                padding: 0.7rem 0.9rem;
+            .university-description {
                 font-size: 0.9rem;
             }
-        }
-        
-        @@media (max-height: 700px) {
-            .login-header {
-                padding: 2rem 2rem 1.5rem;
-            }
             
-            .login-header .icon {
-                width: 60px;
-                height: 60px;
-                margin-bottom: 0.8rem;
-            }
-            
-            .login-header .icon i {
-                font-size: 1.8rem;
-            }
-            
-            .login-body {
-                padding: 1.5rem 2rem 2rem;
-            }
-            
-            .form-group {
-                margin-bottom: 1.2rem;
+            .login-title {
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="icon">
-                    <i class="bi bi-book-fill"></i>
+    <div class="login-page-container">
+        <!-- LEFT PANEL -->
+        <div class="login-left-panel">
+            <div class="logo-section">
+                <div class="btec-logo-container">
+                    <div class="btec-logo-graphic">
+                        <div class="btec-dot"></div>
+                        <div class="btec-dot"></div>
+                        <div class="btec-dot"></div>
+                    </div>
+                    <div class="btec-logo-text">BTEC</div>
                 </div>
-                <h2>SIMS</h2>
-                <p>Student Information Management System</p>
             </div>
             
-            <div class="login-body">
+            <div class="branding-section">
+                <h1 class="university-name">BTEC FPT</h1>
+                <p class="university-subtitle">Alliance with FPT Education</p>
+                <p class="university-description">
+                    BTEC FPT is an internationally recognized training program, 
+                    combining UK education with FPT technology. The program focuses 
+                    on practice, professional skill development, and preparing students 
+                    for real-world work environments with modern learning methods and 
+                    advanced technology applications.
+                </p>
+            </div>
+            
+            <div class="team-info-section">
+                <p class="team-label">Project developed by</p>
+                <div class="team-badge">
+                    <i class="bi bi-people-fill"></i>
+                    <span class="team-name">Group 5</span>
+                </div>
+                <p class="project-name">Student Information Management System - SIMS</p>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANEL -->
+        <div class="login-right-panel">
+            <div class="login-form-container">
+                <h2 class="login-title">Login</h2>
+                <p class="login-subtitle">Please enter your login credentials to continue</p>
+                
                 <form asp-action="Login" method="post">
                     @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
                     {
@@ -414,40 +524,38 @@
                     <div class="form-group">
                         <label asp-for="Username" class="form-label">
                             <i class="bi bi-person-fill"></i>
-                            Tên đăng nhập
+                            Username
                         </label>
-                        <input asp-for="Username" class="form-control" placeholder="Nhập tên đăng nhập" autofocus>
+                        <input asp-for="Username" class="form-control" placeholder="Enter username" autofocus>
                         <span asp-validation-for="Username" class="text-danger"></span>
                     </div>
                     
                     <div class="form-group">
                         <label asp-for="Password" class="form-label">
                             <i class="bi bi-lock-fill"></i>
-                            Mật khẩu
+                            Password
                         </label>
-                        <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu">
+                        <input asp-for="Password" class="form-control" type="password" placeholder="Enter password">
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                     
                     <div class="form-check">
                         <input asp-for="RememberMe" class="form-check-input" type="checkbox" id="rememberMe">
                         <label asp-for="RememberMe" class="form-check-label" for="rememberMe">
-                            Ghi nhớ đăng nhập
+                            Remember Me
                         </label>
                     </div>
                     
                     <button type="submit" class="btn-login">
-                        <span>
-                            <i class="bi bi-box-arrow-in-right"></i>
-                            Đăng nhập
-                        </span>
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Login</span>
                     </button>
+                    
+                    <div class="footer-text">
+                        <i class="bi bi-shield-check"></i>
+                        Secure & Safe Login
+                    </div>
                 </form>
-                
-                <div class="footer-text">
-                    <i class="bi bi-shield-check"></i>
-                    Đăng nhập an toàn & bảo mật
-                </div>
             </div>
         </div>
     </div>

@@ -26,6 +26,12 @@ namespace SIMS.Controllers
                 .FirstOrDefaultAsync(f => f.UserId == userId);
         }
 
+        // ✅ ADD: Index action redirect to Dashboard
+        public IActionResult Index()
+        {
+            return RedirectToAction(nameof(Dashboard));
+        }
+
         public async Task<IActionResult> Dashboard()
         {
             var faculty = await GetCurrentFaculty();
@@ -333,7 +339,7 @@ namespace SIMS.Controllers
                     enrollment.AverageScore = null;
                 }
 
-                // Calculate letter grade
+                // ✅ NEW: Calculate letter grade and check FAIL/PASS
                 if (enrollment.AverageScore.HasValue)
                 {
                     enrollment.LetterGrade = enrollment.AverageScore.Value switch
@@ -349,20 +355,47 @@ namespace SIMS.Controllers
                         _ => "F"
                     };
 
-                    // Update status to Completed if has grade
-                    if (enrollment.Status == "Active")
+                    // ✅ NEW: Đánh dấu TRƯỢT nếu < 5.0
+                    if (enrollment.AverageScore.Value < 5.0f)
+                    {
+                        enrollment.Status = "Failed";
+                        enrollment.IsFailed = true;
+                        enrollment.LetterGrade = "F"; // Ensure F grade
+                    }
+                    else
                     {
                         enrollment.Status = "Completed";
+                        enrollment.IsFailed = false;
                     }
                 }
                 else
                 {
                     enrollment.LetterGrade = null;
+                    // Keep current status if no score
+                    if (enrollment.Status == "Active")
+                    {
+                        // Don't change Active status if no complete scores
+                    }
                 }
             }
 
             await _context.SaveChangesAsync();
-            TempData["Success"] = "Lưu điểm thành công!";
+            
+            // ✅ Count failed students for feedback
+            var failedCount = model.Students.Count(s => 
+                s.MidtermScore.HasValue && 
+                s.FinalScore.HasValue && 
+                ((s.MidtermScore.Value * 0.4f) + (s.FinalScore.Value * 0.6f)) < 5.0f);
+            
+            if (failedCount > 0)
+            {
+                TempData["Warning"] = $"Grades saved successfully! {failedCount} students failed the course (< 5.0 points).";
+            }
+            else
+            {
+                TempData["Success"] = "Grades saved successfully! All students passed the course.";
+            }
+            
             return RedirectToAction(nameof(MyCourses));
         }
     }

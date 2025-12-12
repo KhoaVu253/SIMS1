@@ -7,17 +7,17 @@
         <i class="bi bi-speedometer2"></i>
         Dashboard Admin
     </h2>
-    <p class="text-muted">Chào mừng đến với hệ thống quản lý sinh viên</p>
+    <p class="text-muted">Welcome to Student Information Management System</p>
 </div>
 
 <div class="row g-4 mb-4">
     <div class="col-md-3">
         <div class="stat-card stat-card-navy">
             <i class="bi bi-people-fill icon"></i>
-            <h6>Sinh viên</h6>
+            <h6>Students</h6>
             <h2>@ViewBag.TotalStudents</h2>
             <a asp-action="Students" class="text-white text-decoration-none mt-2 d-inline-block">
-                <small>Xem chi tiết <i class="bi bi-arrow-right"></i></small>
+                <small>View Details <i class="bi bi-arrow-right"></i></small>
             </a>
         </div>
     </div>
@@ -25,10 +25,10 @@
     <div class="col-md-3">
         <div class="stat-card stat-card-gold">
             <i class="bi bi-person-badge-fill icon"></i>
-            <h6>Giảng viên</h6>
+            <h6>Faculty</h6>
             <h2>@ViewBag.TotalFaculties</h2>
             <a asp-action="Faculties" class="text-white text-decoration-none mt-2 d-inline-block">
-                <small>Xem chi tiết <i class="bi bi-arrow-right"></i></small>
+                <small>View Details <i class="bi bi-arrow-right"></i></small>
             </a>
         </div>
     </div>
@@ -36,10 +36,10 @@
     <div class="col-md-3">
         <div class="stat-card stat-card-blue">
             <i class="bi bi-book-fill icon"></i>
-            <h6>Môn học</h6>
+            <h6>Courses</h6>
             <h2>@ViewBag.TotalCourses</h2>
             <a asp-action="Courses" class="text-white text-decoration-none mt-2 d-inline-block">
-                <small>Xem chi tiết <i class="bi bi-arrow-right"></i></small>
+                <small>View Details <i class="bi bi-arrow-right"></i></small>
             </a>
         </div>
     </div>
@@ -47,9 +47,9 @@
     <div class="col-md-3">
         <div class="stat-card stat-card-green">
             <i class="bi bi-journal-check icon"></i>
-            <h6>Đăng ký</h6>
+            <h6>Enrollments</h6>
             <h2>@ViewBag.TotalEnrollments</h2>
-            <small class="text-white d-block mt-2">Tổng số đăng ký</small>
+            <small class="text-white d-block mt-2">Total Enrollments</small>
         </div>
     </div>
 </div>
@@ -58,10 +58,10 @@
     <div class="col-md-6">
         <div class="stat-card stat-card-orange">
             <i class="bi bi-person-lock icon"></i>
-            <h6>Tài khoản hoạt động</h6>
+            <h6>Active Accounts</h6>
             <h2>@ViewBag.TotalUsers</h2>
             <a asp-action="ManageAccounts" class="text-white text-decoration-none mt-2 d-inline-block">
-                <small>Quản lý tài khoản <i class="bi bi-arrow-right"></i></small>
+                <small>Manage Accounts <i class="bi bi-arrow-right"></i></small>
             </a>
         </div>
     </div>
@@ -69,9 +69,9 @@
     <div class="col-md-6">
         <div class="stat-card" style="background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);">
             <i class="bi bi-ban icon"></i>
-            <h6>Tài khoản đã khóa</h6>
+            <h6>Locked Accounts</h6>
             <h2>@ViewBag.InactiveUsers</h2>
-            <small class="text-white d-block mt-2">Đã bị vô hiệu hóa</small>
+            <small class="text-white d-block mt-2">Deactivated</small>
         </div>
     </div>
 </div>
@@ -81,32 +81,32 @@
         <div class="card">
             <div class="card-header">
                 <i class="bi bi-lightning-fill me-2"></i>
-                Quản lý nhanh
+                Quick Management
             </div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <a asp-action="CreateStudent" class="btn btn-outline-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-person-plus-fill"></i>
-                            Thêm sinh viên mới
+                            Add New Student
                         </a>
                     </div>
                     <div class="col-md-3">
                         <a asp-action="CreateFaculty" class="btn btn-outline-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-person-badge"></i>
-                            Thêm giảng viên mới
+                            Add New Faculty
                         </a>
                     </div>
                     <div class="col-md-3">
                         <a asp-action="CreateCourse" class="btn btn-outline-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-book"></i>
-                            Thêm môn học mới
+                            Add New Course
                         </a>
                     </div>
                     <div class="col-md-3">
                         <a asp-action="ManageAccounts" class="btn btn-outline-warning btn-lg w-100 d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-person-lock"></i>
-                            Quản lý tài khoản
+                            Manage Accounts
                         </a>
                     </div>
                 </div>

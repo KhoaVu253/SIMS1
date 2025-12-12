@@ -128,7 +128,7 @@ namespace SIMS.Controllers
             user.Password = model.NewPassword;
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Đã reset mật khẩu cho tài khoản {user.Username}";
+            TempData["Success"] = $"Password reset for account {user.Username}";
             return RedirectToAction(nameof(ManageAccounts));
         }
 
@@ -164,8 +164,8 @@ namespace SIMS.Controllers
 
             await _context.SaveChangesAsync();
 
-            var status = user.IsActive ? "kích hoạt" : "khóa";
-            TempData["Success"] = $"Đã {status} tài khoản {user.Username}";
+            var status = user.IsActive ? "activated" : "locked";
+            TempData["Success"] = $"Account {user.Username} has been {status}";
             return RedirectToAction(nameof(ManageAccounts));
         }
 
@@ -182,7 +182,7 @@ namespace SIMS.Controllers
             user.Password = "123456";
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Đã reset mật khẩu của {user.Username} về mặc định (123456)";
+            TempData["Success"] = $"Password for {user.Username} has been reset to default (123456)";
             return RedirectToAction(nameof(ManageAccounts));
         }
 
@@ -320,17 +320,17 @@ namespace SIMS.Controllers
                 await transaction.CommitAsync();
 
                 var scheduleInfo = model.ScheduleId.HasValue 
-                    ? " vào lớp cụ thể" 
-                    : " vào môn (chưa gắn lớp)";
+                    ? " to specific class" 
+                    : " to course (no class assigned)";
 
-                TempData["Success"] = $"Đã phân công {assignedCount} sinh viên{scheduleInfo}!";
+                TempData["Success"] = $"{assignedCount} students have been assigned{scheduleInfo}!";
 
                 return RedirectToAction(nameof(ManageEnrollments));
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                ModelState.AddModelError("", $"An error occurred: {ex.Message}");
                 
                 ViewBag.Courses = new SelectList(
                     await _context.Courses.Where(c => c.IsActive).ToListAsync(),
@@ -386,7 +386,7 @@ namespace SIMS.Controllers
 
             if (schedule == null)
             {
-                ModelState.AddModelError("", "Lớp học không tồn tại hoặc không khớp với môn học/học kỳ đã chọn");
+                ModelState.AddModelError("", "Class does not exist or does not match the selected course/semester");
                 ViewBag.Courses = new SelectList(
                     await _context.Courses.Where(c => c.IsActive).ToListAsync(),
                     "Id", "CourseName");
@@ -408,7 +408,7 @@ namespace SIMS.Controllers
 
             if (!students.Any())
             {
-                ModelState.AddModelError("", "Không tìm thấy sinh viên nào phù hợp với điều kiện");
+                ModelState.AddModelError("", "No students found matching the criteria");
                 ViewBag.Courses = new SelectList(
                     await _context.Courses.Where(c => c.IsActive).ToListAsync(),
                     "Id", "CourseName");
@@ -454,20 +454,20 @@ namespace SIMS.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                var facultyName = schedule.Faculty != null ? schedule.Faculty.FullName : "Chưa rõ";
-                var timeInfo = $"{ScheduleHelper.GetDayName(schedule.DayOfWeek)}, {ScheduleHelper.GetTimeRange(schedule.StartPeriod, schedule.EndPeriod)}, Phòng {schedule.Room}";
+                var facultyName = schedule.Faculty != null ? schedule.Faculty.FullName : "Unknown";
+                var timeInfo = $"{ScheduleHelper.GetDayName(schedule.DayOfWeek)}, {ScheduleHelper.GetTimeRange(schedule.StartPeriod, schedule.EndPeriod)}, Room {schedule.Room}";
 
-                TempData["Success"] = $"Đã phân công {assignedCount}/{students.Count} sinh viên vào lớp!\n" +
-                    $"Môn: {schedule.Course.CourseName}\n" +
-                    $"GV: {facultyName}\n" +
-                    $"Lịch: {timeInfo}";
+                TempData["Success"] = $"{assignedCount}/{students.Count} students have been assigned to class!\n" +
+                    $"Course: {schedule.Course.CourseName}\n" +
+                    $"Faculty: {facultyName}\n" +
+                    $"Schedule: {timeInfo}";
 
                 return RedirectToAction(nameof(ManageEnrollments));
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                ModelState.AddModelError("", $"An error occurred: {ex.Message}");
                 
                 ViewBag.Courses = new SelectList(
                     await _context.Courses.Where(c => c.IsActive).ToListAsync(),
@@ -489,7 +489,7 @@ namespace SIMS.Controllers
 
             if (schedule == null)
             {
-                TempData["Error"] = "Không tìm thấy lớp học!";
+                TempData["Error"] = "Class not found!";
                 return RedirectToAction(nameof(ManageEnrollments));
             }
 
@@ -594,7 +594,7 @@ namespace SIMS.Controllers
             // Check if username exists
             if (await _context.Users.AnyAsync(u => u.Username == model.StudentCode))
             {
-                ModelState.AddModelError("StudentCode", "Mã sinh viên đã tồn tại");
+                ModelState.AddModelError("StudentCode", "Student code already exists");
                 return View(model);
             }
 
@@ -629,13 +629,13 @@ namespace SIMS.Controllers
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-                TempData["Success"] = $"Thêm sinh viên thành công! Tài khoản: {user.Username} / Mật khẩu: {user.Password}";
+                TempData["Success"] = $"Student added successfully! Account: {user.Username} / Password: {user.Password}";
                 return RedirectToAction(nameof(Students));
             }
             catch
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError("", "Có lỗi xảy ra khi thêm sinh viên");
+                ModelState.AddModelError("", "An error occurred while adding student");
                 return View(model);
             }
         }
@@ -699,11 +699,11 @@ namespace SIMS.Controllers
             if (!string.IsNullOrEmpty(model.Password))
             {
                 student.User.Password = model.Password;
-                TempData["Success"] = "Cập nhật sinh viên và đổi mật khẩu thành công!";
+                TempData["Success"] = "Student updated and password changed successfully!";
             }
             else
             {
-                TempData["Success"] = "Cập nhật sinh viên thành công!";
+                TempData["Success"] = "Student updated successfully!";
             }
 
             student.User.IsActive = model.IsActive;
@@ -734,7 +734,7 @@ namespace SIMS.Controllers
                 student.User.IsActive = false;
                 await _context.SaveChangesAsync();
                 
-                TempData["Warning"] = $"Sinh viên đã có {student.Enrollments.Count} môn đăng ký. Tài khoản đã được khóa thay vì xóa.";
+                TempData["Warning"] = $"Student has {student.Enrollments.Count} enrollments. Account has been locked instead of deleted.";
                 return RedirectToAction(nameof(Students));
             }
 
@@ -757,13 +757,13 @@ namespace SIMS.Controllers
                 }
 
                 await transaction.CommitAsync();
-                TempData["Success"] = "Xóa sinh viên thành công!";
+                TempData["Success"] = "Student deleted successfully!";
                 return RedirectToAction(nameof(Students));
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                TempData["Error"] = $"Error deleting: {ex.Message}";
                 return RedirectToAction(nameof(Students));
             }
         }
@@ -790,7 +790,7 @@ namespace SIMS.Controllers
                 faculty.User.IsActive = false;
                 await _context.SaveChangesAsync();
                 
-                TempData["Warning"] = $"Giảng viên đang phụ trách {faculty.CourseFaculties.Count} môn học. Tài khoản đã được khóa thay vì xóa.";
+                TempData["Warning"] = $"Faculty is teaching {faculty.CourseFaculties.Count} courses. Account has been locked instead of deleted.";
                 return RedirectToAction(nameof(Faculties));
             }
 
@@ -813,13 +813,13 @@ namespace SIMS.Controllers
                 }
 
                 await transaction.CommitAsync();
-                TempData["Success"] = "Xóa giảng viên thành công!";
+                TempData["Success"] = "Faculty deleted successfully!";
                 return RedirectToAction(nameof(Faculties));
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                TempData["Error"] = $"Error deleting: {ex.Message}";
                 return RedirectToAction(nameof(Faculties));
             }
         }
@@ -865,13 +865,13 @@ namespace SIMS.Controllers
                 }
 
                 await transaction.CommitAsync();
-                TempData["Success"] = $"Xóa sinh viên thành công! (Đã xóa {enrollmentCount} môn đăng ký)";
+                TempData["Success"] = $"Student deleted successfully! ({enrollmentCount} enrollments deleted)";
                 return RedirectToAction(nameof(Students));
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                TempData["Error"] = $"Error deleting: {ex.Message}";
                 return RedirectToAction(nameof(Students));
             }
         }
@@ -916,13 +916,13 @@ namespace SIMS.Controllers
                 }
 
                 await transaction.CommitAsync();
-                TempData["Success"] = $"Xóa giảng viên thành công! ({courseCount} phân công môn học đã bị xóa)";
+                TempData["Success"] = $"Faculty deleted successfully! ({courseCount} course assignments deleted)";
                 return RedirectToAction(nameof(Faculties));
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                TempData["Error"] = $"Error deleting: {ex.Message}";
                 return RedirectToAction(nameof(Faculties));
             }
         }
@@ -961,7 +961,7 @@ namespace SIMS.Controllers
 
             if (await _context.Users.AnyAsync(u => u.Username == model.FacultyCode))
             {
-                ModelState.AddModelError("FacultyCode", "Mã giảng viên đã tồn tại");
+                ModelState.AddModelError("FacultyCode", "Faculty code already exists");
                 return View(model);
             }
 
@@ -992,13 +992,13 @@ namespace SIMS.Controllers
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-                TempData["Success"] = $"Thêm giảng viên thành công! Tài khoản: {user.Username} / Mật khẩu: {user.Password}";
+                TempData["Success"] = $"Faculty added successfully! Account: {user.Username} / Password: {user.Password}";
                 return RedirectToAction(nameof(Faculties));
             }
             catch
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError("", "Có lỗi xảy ra khi thêm giảng viên");
+                ModelState.AddModelError("", "An error occurred while adding faculty");
                 return View(model);
             }
         }
@@ -1058,11 +1058,11 @@ namespace SIMS.Controllers
             if (!string.IsNullOrEmpty(model.Password))
             {
                 faculty.User.Password = model.Password;
-                TempData["Success"] = "Cập nhật giảng viên và đổi mật khẩu thành công!";
+                TempData["Success"] = "Faculty updated and password changed successfully!";
             }
             else
             {
-                TempData["Success"] = "Cập nhật giảng viên thành công!";
+                TempData["Success"] = "Faculty updated successfully!";
             }
 
             faculty.User.IsActive = model.IsActive;
@@ -1114,7 +1114,7 @@ namespace SIMS.Controllers
 
             if (await _context.Courses.AnyAsync(c => c.CourseCode == model.CourseCode))
             {
-                ModelState.AddModelError("CourseCode", "Mã môn học đã tồn tại");
+                ModelState.AddModelError("CourseCode", "Course code already exists");
                 ViewBag.Faculties = new SelectList(
                     await _context.Faculties.Where(f => f.IsActive).ToListAsync(), 
                     "Id", "FullName");
@@ -1148,7 +1148,7 @@ namespace SIMS.Controllers
                         {
                             CourseId = course.Id,
                             FacultyId = facultyId,
-                            Role = facultyId == model.FacultyId ? "Giảng viên chính" : "Giảng viên",
+                            Role = facultyId == model.FacultyId ? "Primary Faculty" : "Faculty",
                             IsActive = true,
                             AssignedDate = DateTime.Now
                         };
@@ -1158,13 +1158,13 @@ namespace SIMS.Controllers
                 }
 
                 await transaction.CommitAsync();
-                TempData["Success"] = "Thêm môn học thành công!";
+                TempData["Success"] = "Course added successfully!";
                 return RedirectToAction(nameof(Courses));
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                ModelState.AddModelError("", $"An error occurred: {ex.Message}");
                 ViewBag.Faculties = new SelectList(
                     await _context.Faculties.Where(f => f.IsActive).ToListAsync(), 
                     "Id", "FullName");
@@ -1227,7 +1227,7 @@ namespace SIMS.Controllers
             course.IsActive = model.IsActive;
 
             await _context.SaveChangesAsync();
-            TempData["Success"] = "Cập nhật môn học thành công!";
+                TempData["Success"] = "Course updated successfully!";
             return RedirectToAction(nameof(Courses));
         }
 
@@ -1256,9 +1256,9 @@ namespace SIMS.Controllers
                 await _context.SaveChangesAsync();
                 
                 var relatedCount = course.Enrollments.Count + (hasSchedules ? 1 : 0);
-                TempData["Warning"] = $"Môn học đã có {course.Enrollments.Count} sinh viên đăng ký" +
-                    (hasSchedules ? " và có lịch học" : "") + 
-                    ". Môn học đã được vô hiệu hóa thay vì xóa.";
+                TempData["Warning"] = $"Course has {course.Enrollments.Count} student enrollments" +
+                    (hasSchedules ? " and schedules" : "") + 
+                    ". Course has been deactivated instead of deleted.";
                 return RedirectToAction(nameof(Courses));
             }
 
@@ -1278,13 +1278,13 @@ namespace SIMS.Controllers
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-                TempData["Success"] = "Xóa môn học thành công!";
+                TempData["Success"] = "Course deleted successfully!";
                 return RedirectToAction(nameof(Courses));
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                TempData["Error"] = $"Error deleting: {ex.Message}";
                 return RedirectToAction(nameof(Courses));
             }
         }
@@ -1338,14 +1338,14 @@ namespace SIMS.Controllers
 
                 await transaction.CommitAsync();
                 
-                TempData["Success"] = $"Xóa môn học thành công! " +
-                    $"(Đã xóa {enrollmentCount} đăng ký, {schedules.Count} lịch học, {facultyCount} phân công GV)";
+                TempData["Success"] = $"Course deleted successfully! " +
+                    $"({enrollmentCount} enrollments, {schedules.Count} schedules, {facultyCount} faculty assignments deleted)";
                 return RedirectToAction(nameof(Courses));
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                TempData["Error"] = $"Error deleting: {ex.Message}";
                 return RedirectToAction(nameof(Courses));
             }
         }
@@ -1455,7 +1455,7 @@ namespace SIMS.Controllers
             // Validate periods
             if (model.EndPeriod < model.StartPeriod)
             {
-                ModelState.AddModelError("EndPeriod", "Tiết kết thúc phải lớn hơn hoặc bằng tiết bắt đầu");
+                ModelState.AddModelError("EndPeriod", "End period must be greater than or equal to start period");
                 ViewBag.Courses = new SelectList(
                     await _context.Courses.Where(c => c.IsActive).ToListAsync(),
                     "Id", "CourseName");
@@ -1488,7 +1488,7 @@ namespace SIMS.Controllers
                 {
                     ModelState.AddModelError(
                         "", 
-                        $"Giảng viên đã có lịch dạy môn '{conflict.Course.CourseName}' vào {ScheduleHelper.GetTimeRange(conflict.StartPeriod, conflict.EndPeriod)}!");
+                        $"Faculty already has a class for '{conflict.Course.CourseName}' at {ScheduleHelper.GetTimeRange(conflict.StartPeriod, conflict.EndPeriod)}!");
                     ViewBag.Courses = new SelectList(
                         await _context.Courses.Where(c => c.IsActive).ToListAsync(),
                         "Id", "CourseName");
@@ -1521,7 +1521,7 @@ namespace SIMS.Controllers
                 {
                     ModelState.AddModelError(
                         "Room", 
-                        $"Phòng {model.Room} đã được môn '{conflict.Course.CourseName}' sử dụng vào {ScheduleHelper.GetTimeRange(conflict.StartPeriod, conflict.EndPeriod)}!");
+                        $"Room {model.Room} is already used by '{conflict.Course.CourseName}' at {ScheduleHelper.GetTimeRange(conflict.StartPeriod, conflict.EndPeriod)}!");
                     ViewBag.Courses = new SelectList(
                         await _context.Courses.Where(c => c.IsActive).ToListAsync(),
                         "Id", "CourseName");
@@ -1553,7 +1553,7 @@ namespace SIMS.Controllers
             _context.CourseSchedules.Add(schedule);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Tạo lịch học thành công!";
+            TempData["Success"] = "Schedule created successfully!";
             return RedirectToAction(nameof(ManageSchedules));
         }
 
@@ -1631,7 +1631,7 @@ namespace SIMS.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Cập nhật lịch học thành công!";
+            TempData["Success"] = "Schedule updated successfully!";
             return RedirectToAction(nameof(ManageSchedules));
         }
 
@@ -1648,7 +1648,7 @@ namespace SIMS.Controllers
             _context.CourseSchedules.Remove(schedule);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Xóa lịch học thành công!";
+            TempData["Success"] = "Schedule deleted successfully!";
             return RedirectToAction(nameof(ManageSchedules));
         }
 
@@ -1686,7 +1686,7 @@ namespace SIMS.Controllers
                 {
                     id = f.Id,
                     fullName = f.FullName,
-                    role = "Giảng viên",
+                    role = "Faculty",
                     classGroup = (string?)null,
                     isAssigned = false
                 })
@@ -1712,7 +1712,7 @@ namespace SIMS.Controllers
                 .Select(cs => new
                 {
                     scheduleId = cs.Id,
-                    facultyName = cs.Faculty != null ? cs.Faculty.FullName : "Chưa phân công",
+                    facultyName = cs.Faculty != null ? cs.Faculty.FullName : "Not Assigned",
                     dayOfWeek = cs.DayOfWeek,
                     dayName = ScheduleHelper.GetDayName(cs.DayOfWeek),
                     startPeriod = cs.StartPeriod,
@@ -1855,12 +1855,12 @@ namespace SIMS.Controllers
 
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = $"Đã phân công {model.FacultyIds.Count} giảng viên vào môn học!";
+                TempData["Success"] = $"{model.FacultyIds.Count} faculty members have been assigned to course!";
                 return RedirectToAction(nameof(ManageCourseFaculties), new { courseId = model.CourseId });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                ModelState.AddModelError("", $"An error occurred: {ex.Message}");
 
                 var course = await _context.Courses.FindAsync(model.CourseId);
                 var assignedFacultyIds = await _context.CourseFaculties
@@ -1894,7 +1894,7 @@ namespace SIMS.Controllers
             _context.CourseFaculties.Remove(courseFaculty);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Đã xóa giảng viên khỏi môn học!";
+            TempData["Success"] = "Faculty removed from course!";
             return RedirectToAction(nameof(ManageCourseFaculties), new { courseId });
         }
 
@@ -1911,14 +1911,14 @@ namespace SIMS.Controllers
 
                 if (enrollment == null)
                 {
-                    TempData["Error"] = "Không tìm thấy phân công!";
+                    TempData["Error"] = "Enrollment not found!";
                     return RedirectToAction(nameof(ManageEnrollments));
                 }
 
                 // Kiểm tra xem sinh viên đã có điểm chưa
                 if (enrollment.MidtermScore.HasValue || enrollment.FinalScore.HasValue || enrollment.AverageScore.HasValue)
                 {
-                    TempData["Warning"] = $"Không thể xóa! Sinh viên {enrollment.Student.StudentCode} đã có điểm.";
+                    TempData["Warning"] = $"Cannot delete! Student {enrollment.Student.StudentCode} already has grades.";
                     return RedirectToAction(nameof(ManageEnrollments));
                 }
 
@@ -1926,12 +1926,12 @@ namespace SIMS.Controllers
                 _context.Enrollments.Remove(enrollment);
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = $"Đã xóa phân công của sinh viên {enrollment.Student.StudentCode} - {enrollment.Course.CourseName}";
+                TempData["Success"] = $"Enrollment deleted for student {enrollment.Student.StudentCode} - {enrollment.Course.CourseName}";
                 return RedirectToAction(nameof(ManageEnrollments));
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Lỗi khi xóa: {ex.Message}";
+                TempData["Error"] = $"Error deleting: {ex.Message}";
                 return RedirectToAction(nameof(ManageEnrollments));
             }
         }

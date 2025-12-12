@@ -1,6 +1,6 @@
 @model SIMS.Models.ViewModels.CourseScheduleFormViewModel
 @{
-    ViewData["Title"] = "Thêm lịch học";
+    ViewData["Title"] = "Create Schedule";
 }
 
 <div class="container">
@@ -10,7 +10,7 @@
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="bi bi-calendar-plus me-2"></i>
-                        Thêm lịch học mới
+                        Create New Schedule
                     </h4>
                 </div>
                 <div class="card-body">
@@ -22,7 +22,7 @@
                             <div class="col-md-6 mb-3">
                                 <label asp-for="CourseId" class="form-label required"></label>
                                 <select asp-for="CourseId" class="form-select" asp-items="ViewBag.Courses" id="courseSelect">
-                                    <option value="">-- Chọn môn học --</option>
+                                    <option value="">-- Select Course --</option>
                                 </select>
                                 <span asp-validation-for="CourseId" class="text-danger"></span>
                             </div>
@@ -31,15 +31,15 @@
                             <div class="col-md-6 mb-3">
                                 <label asp-for="FacultyId" class="form-label required">
                                     <i class="bi bi-person me-1"></i>
-                                    Giảng viên
+                                    Faculty
                                 </label>
                                 <select asp-for="FacultyId" class="form-select" asp-items="ViewBag.Faculties" id="facultySelect">
-                                    <option value="">-- Chọn giảng viên --</option>
+                                    <option value="">-- Select Faculty --</option>
                                 </select>
                                 <span asp-validation-for="FacultyId" class="text-danger"></span>
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle me-1"></i>
-                                    Chọn giảng viên dạy buổi học này
+                                    Select faculty for this class session
                                 </small>
                             </div>
                         </div>
@@ -69,14 +69,14 @@
                             <div class="card-body">
                                 <h6 class="card-title">
                                     <i class="bi bi-clock me-2"></i>
-                                    Thời gian học
+                                    Class Time
                                 </h6>
                                 <div class="row">
                                     <!-- Day of Week -->
                                     <div class="col-md-4 mb-3">
                                         <label asp-for="DayOfWeek" class="form-label required"></label>
                                         <select asp-for="DayOfWeek" class="form-select">
-                                            <option value="">-- Chọn thứ --</option>
+                                            <option value="">-- Select Day --</option>
                                             @foreach (var day in ViewBag.Days as List<(int Value, string Name)>)
                                             {
                                                 <option value="@day.Value">@day.Name</option>
@@ -89,11 +89,11 @@
                                     <div class="col-md-4 mb-3">
                                         <label asp-for="StartPeriod" class="form-label required"></label>
                                         <select asp-for="StartPeriod" class="form-select" id="startPeriod">
-                                            <option value="">-- Chọn tiết --</option>
+                                            <option value="">-- Select Period --</option>
                                             @foreach (var period in ViewBag.Periods as List<int>)
                                             {
                                                 <option value="@period">
-                                                    Tiết @period (@SIMS.Helpers.ScheduleHelper.GetPeriodStartTime(period))
+                                                    Period @period (@SIMS.Helpers.ScheduleHelper.GetPeriodStartTime(period))
                                                 </option>
                                             }
                                         </select>
@@ -119,7 +119,7 @@
                                 <!-- Time Preview -->
                                 <div class="alert alert-info mb-0" id="timePreview" style="display: none;">
                                     <i class="bi bi-info-circle me-2"></i>
-                                    <strong>Thời gian học:</strong> <span id="timeText"></span>
+                                    <strong>Class Time:</strong> <span id="timeText"></span>
                                 </div>
                             </div>
                         </div>
@@ -129,13 +129,13 @@
                             <div class="col-md-12 mb-3">
                                 <label asp-for="Room" class="form-label required">
                                     <i class="bi bi-door-closed me-1"></i>
-                                    Phòng học
+                                    Room
                                 </label>
-                                <input asp-for="Room" class="form-control" placeholder="VD: A101, B205, C301..." />
+                                <input asp-for="Room" class="form-control" placeholder="E.g: A101, B205, C301..." />
                                 <span asp-validation-for="Room" class="text-danger"></span>
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle me-1"></i>
-                                    Nhập mã phòng học (VD: A101 cho Phòng 101 nhà A)
+                                    Enter room code (E.g: A101 for Room 101 Building A)
                                 </small>
                             </div>
                         </div>
@@ -144,7 +144,7 @@
                         <div class="mb-3">
                             <label asp-for="Notes" class="form-label"></label>
                             <textarea asp-for="Notes" class="form-control" rows="2" 
-                                      placeholder="Ghi chú thêm về lịch học..."></textarea>
+                                      placeholder="Additional notes about the schedule..."></textarea>
                             <span asp-validation-for="Notes" class="text-danger"></span>
                         </div>
 
@@ -153,7 +153,7 @@
                             <div class="form-check">
                                 <input asp-for="IsActive" class="form-check-input" type="checkbox" />
                                 <label asp-for="IsActive" class="form-check-label">
-                                    Kích hoạt lịch học ngay
+                                    Activate schedule immediately
                                 </label>
                             </div>
                         </div>
@@ -161,10 +161,10 @@
                         <!-- Buttons -->
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle me-1"></i> Tạo lịch học
+                                <i class="bi bi-check-circle me-1"></i> Create Schedule
                             </button>
                             <a asp-action="ManageSchedules" class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-1"></i> Hủy
+                                <i class="bi bi-x-circle me-1"></i> Cancel
                             </a>
                         </div>
                     </form>
@@ -175,21 +175,21 @@
             <div class="card mt-3">
                 <div class="card-header bg-info text-white">
                     <i class="bi bi-info-circle me-2"></i>
-                    <strong>Hướng dẫn</strong>
+                    <strong>Guidelines</strong>
                 </div>
                 <div class="card-body">
-                    <h6>Quy định về tiết học:</h6>
+                    <h6>Period Regulations:</h6>
                     <ul class="mb-3">
-                        <li><strong>Buổi sáng:</strong> Tiết 1-6 (07:00 - 12:20)</li>
-                        <li><strong>Buổi chiều:</strong> Tiết 7-12 (13:00 - 18:20)</li>
-                        <li>Mỗi tiết học dài 50 phút</li>
-                        <li>Không nên sắp xếp quá 5 tiết liên tục</li>
+                        <li><strong>Morning:</strong> Period 1-6 (07:00 - 12:20)</li>
+                        <li><strong>Afternoon:</strong> Period 7-12 (13:00 - 18:20)</li>
+                        <li>Each period is 50 minutes long</li>
+                        <li>Should not schedule more than 5 consecutive periods</li>
                     </ul>
-                    <h6>Hệ thống sẽ kiểm tra:</h6>
+                    <h6>The system will check:</h6>
                     <ul class="mb-0">
-                        <li><i class="bi bi-check-circle text-success"></i> Trùng lịch giảng viên</li>
-                        <li><i class="bi bi-check-circle text-success"></i> Trùng phòng học</li>
-                        <li><i class="bi bi-check-circle text-success"></i> Tính hợp lệ của tiết học</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Faculty schedule conflicts</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Room conflicts</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Period validity</li>
                     </ul>
                 </div>
             </div>
@@ -212,17 +212,17 @@
                         success: function(data) {
                             var facultySelect = $('#facultySelect');
                             facultySelect.empty();
-                            facultySelect.append('<option value="">-- Chọn giảng viên --</option>');
+                            facultySelect.append('<option value="">-- Select Faculty --</option>');
                             
                             if (data.length === 0) {
-                                facultySelect.append('<option value="" disabled>Môn này chưa có giảng viên</option>');
+                                facultySelect.append('<option value="" disabled>This course has no faculty assigned</option>');
                             } else {
                                 $.each(data, function(i, faculty) {
                                     var optionText = faculty.fullName;
                                     if (faculty.classGroup) {
                                         optionText += ' (' + faculty.classGroup + ')';
                                     }
-                                    if (faculty.role && faculty.role !== 'Giảng viên') {
+                                    if (faculty.role && faculty.role !== 'Faculty') {
                                         optionText += ' - ' + faculty.role;
                                     }
                                     facultySelect.append($('<option></option>')
@@ -232,11 +232,11 @@
                             }
                         },
                         error: function() {
-                            alert('Không thể tải danh sách giảng viên');
+                            alert('Unable to load faculty list');
                         }
                     });
                 } else {
-                    $('#facultySelect').empty().append('<option value="">-- Chọn giảng viên --</option>');
+                    $('#facultySelect').empty().append('<option value="">-- Select Faculty --</option>');
                 }
             });
 
@@ -264,7 +264,7 @@
                 var end = parseInt($(this).val());
                 
                 if (start && end && end < start) {
-                    alert('Tiết kết thúc phải lớn hơn hoặc bằng tiết bắt đầu!');
+                    alert('End period must be greater than or equal to start period!');
                     $(this).val('');
                 }
             });

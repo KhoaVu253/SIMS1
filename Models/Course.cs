@@ -19,20 +19,18 @@ namespace SIMS.Models
         [StringLength(100)]
         public string Department { get; set; } = string.Empty;
 
-        // ⚠️ DEPRECATED: Giữ lại để backward compatibility, sẽ remove sau
-        // Dùng CourseFaculties thay thế
-        [Obsolete("Use CourseFaculties navigation property instead")]
+        // ✅ Keep for backward compatibility - Primary faculty (optional)
         public int? FacultyId { get; set; }
 
         public bool IsActive { get; set; } = true;
 
         // Navigation properties
-        [Obsolete("Use CourseFaculties navigation property instead")]
+        // ✅ Primary faculty (optional, for backward compatibility)
         public Faculty? Faculty { get; set; }
         
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         
-        // ✅ NEW: Many-to-Many relationship với Faculty
+        // ✅ Many-to-Many relationship with Faculty (multiple faculties can teach a course)
         public ICollection<CourseFaculty> CourseFaculties { get; set; } = new List<CourseFaculty>();
     }
 }

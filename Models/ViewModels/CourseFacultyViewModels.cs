@@ -3,31 +3,31 @@ using System.ComponentModel.DataAnnotations;
 namespace SIMS.Models.ViewModels
 {
     /// <summary>
-    /// ViewModel cho form phân công giảng viên vào môn học
+    /// ViewModel for assigning faculty to course form
     /// </summary>
     public class AssignFacultyToCourseViewModel
     {
-        [Required(ErrorMessage = "Vui lòng chọn môn học")]
+        [Required(ErrorMessage = "Please select a course")]
         public int CourseId { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng chọn ít nhất 1 giảng viên")]
+        [Required(ErrorMessage = "Please select at least 1 faculty")]
         public List<int> FacultyIds { get; set; } = new();
 
         [StringLength(50)]
-        [Display(Name = "Vai trò")]
-        public string Role { get; set; } = "Giảng viên";
+        [Display(Name = "Role")]
+        public string Role { get; set; } = "Faculty";
 
         [StringLength(50)]
-        [Display(Name = "Lớp/Nhóm")]
+        [Display(Name = "Class/Group")]
         public string? ClassGroup { get; set; }
 
         [StringLength(500)]
-        [Display(Name = "Ghi chú")]
+        [Display(Name = "Notes")]
         public string? Notes { get; set; }
     }
 
     /// <summary>
-    /// ViewModel hiển thị danh sách giảng viên của môn học
+    /// ViewModel to display list of faculty for a course
     /// </summary>
     public class CourseFacultyListViewModel
     {
@@ -46,17 +46,17 @@ namespace SIMS.Models.ViewModels
     }
 
     /// <summary>
-    /// ViewModel cho CourseFormViewModel với multiple faculties
+    /// ViewModel for CourseFormViewModel with multiple faculties
     /// </summary>
     public class CourseFormViewModelV2 : CourseFormViewModel
     {
         /// <summary>
-        /// Danh sách giảng viên đã được phân công
+        /// List of assigned faculty IDs
         /// </summary>
         public List<int> AssignedFacultyIds { get; set; } = new();
 
         /// <summary>
-        /// Danh sách giảng viên với thông tin chi tiết
+        /// List of faculty with detailed information
         /// </summary>
         public List<CourseFacultyListViewModel> AssignedFaculties { get; set; } = new();
     }

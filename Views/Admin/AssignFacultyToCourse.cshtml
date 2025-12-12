@@ -1,6 +1,6 @@
 @model SIMS.Models.ViewModels.AssignFacultyToCourseViewModel
 @{
-    ViewData["Title"] = "Phân công giảng viên";
+    ViewData["Title"] = "Assign Faculty";
 }
 
 <div class="container">
@@ -10,12 +10,12 @@
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="bi bi-person-plus me-2"></i>
-                        Phân công giảng viên
+                        Assign Faculty
                     </h4>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
-                        <strong>Môn học:</strong> @ViewBag.CourseName (@ViewBag.CourseCode)
+                        <strong>Course:</strong> @ViewBag.CourseName (@ViewBag.CourseCode)
                     </div>
 
                     <form asp-action="AssignFacultyToCourse" method="post">
@@ -25,7 +25,7 @@
                         <div class="mb-3">
                             <label class="form-label required">
                                 <i class="bi bi-people me-1"></i>
-                                Chọn giảng viên
+                                Select Faculty
                             </label>
                             <select name="FacultyIds" class="form-select" multiple size="8" required>
                                 @foreach (var faculty in ViewBag.Faculties as SelectList)
@@ -35,17 +35,17 @@
                             </select>
                             <small class="text-muted">
                                 <i class="bi bi-info-circle me-1"></i>
-                                Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều giảng viên
+                                Hold Ctrl (Windows) or Cmd (Mac) to select multiple faculty
                             </small>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Role" class="form-label"></label>
                             <select asp-for="Role" class="form-select">
-                                <option value="Giảng viên">Giảng viên</option>
-                                <option value="Giảng viên chính">Giảng viên chính</option>
-                                <option value="Trợ giảng">Trợ giảng</option>
-                                <option value="Giảng viên thỉnh giảng">Giảng viên thỉnh giảng</option>
+                                <option value="Faculty">Faculty</option>
+                                <option value="Primary Faculty">Primary Faculty</option>
+                                <option value="Teaching Assistant">Teaching Assistant</option>
+                                <option value="Visiting Faculty">Visiting Faculty</option>
                             </select>
                             <span asp-validation-for="Role" class="text-danger"></span>
                         </div>
@@ -53,25 +53,25 @@
                         <div class="mb-3">
                             <label asp-for="ClassGroup" class="form-label"></label>
                             <input asp-for="ClassGroup" class="form-control" 
-                                   placeholder="VD: Lớp A, Nhóm 1, Lớp K62..." />
+                                   placeholder="E.g: Class A, Group 1, Class K62..." />
                             <span asp-validation-for="ClassGroup" class="text-danger"></span>
-                            <small class="text-muted">Tùy chọn: Phân biệt lớp/nhóm giảng viên phụ trách</small>
+                            <small class="text-muted">Optional: Distinguish class/group that faculty is responsible for</small>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Notes" class="form-label"></label>
                             <textarea asp-for="Notes" class="form-control" rows="2" 
-                                      placeholder="Ghi chú thêm..."></textarea>
+                                      placeholder="Additional notes..."></textarea>
                             <span asp-validation-for="Notes" class="text-danger"></span>
                         </div>
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle me-1"></i> Phân công
+                                <i class="bi bi-check-circle me-1"></i> Assign
                             </button>
                             <a asp-action="ManageCourseFaculties" asp-route-courseId="@Model.CourseId" 
                                class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-1"></i> Hủy
+                                <i class="bi bi-x-circle me-1"></i> Cancel
                             </a>
                         </div>
                     </form>
@@ -82,18 +82,18 @@
             <div class="card mt-3">
                 <div class="card-header bg-info text-white">
                     <i class="bi bi-info-circle me-2"></i>
-                    <strong>Hướng dẫn</strong>
+                    <strong>Guidelines</strong>
                 </div>
                 <div class="card-body">
-                    <h6>Phân công nhiều giảng viên cho một môn học:</h6>
+                    <h6>Assigning multiple faculty to one course:</h6>
                     <ul class="mb-0">
-                        <li><strong>Vai trò:</strong> Phân biệt giảng viên chính, phụ, trợ giảng</li>
-                        <li><strong>Lớp/Nhóm:</strong> Giúp phân biệt giảng viên dạy lớp nào</li>
-                        <li><strong>Ví dụ:</strong> 
+                        <li><strong>Role:</strong> Distinguish primary, secondary, and teaching assistant</li>
+                        <li><strong>Class/Group:</strong> Helps distinguish which class the faculty teaches</li>
+                        <li><strong>Example:</strong> 
                             <ul>
-                                <li>GV A - Giảng viên chính - Lớp A</li>
-                                <li>GV B - Giảng viên - Lớp B</li>
-                                <li>GV C - Trợ giảng - Hỗ trợ Lab</li>
+                                <li>Faculty A - Primary Faculty - Class A</li>
+                                <li>Faculty B - Faculty - Class B</li>
+                                <li>Faculty C - Teaching Assistant - Lab Support</li>
                             </ul>
                         </li>
                     </ul>

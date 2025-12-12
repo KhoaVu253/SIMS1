@@ -78,6 +78,20 @@ namespace SIMS.Models
                 .HasForeignKey(e => e.AssignedByUserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            // Configure Enrollment self-referencing for retake tracking
+            modelBuilder.Entity<Enrollment>()
+                .HasOne(e => e.OriginalEnrollment)
+                .WithMany()
+                .HasForeignKey(e => e.OriginalEnrollmentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Index for faster queries
+            modelBuilder.Entity<Enrollment>()
+                .HasIndex(e => new { e.StudentId, e.IsFailed, e.Status });
+
+            modelBuilder.Entity<Enrollment>()
+                .HasIndex(e => new { e.StudentId, e.IsRetaking, e.OriginalEnrollmentId });
+
             // Configure CourseSchedule
             modelBuilder.Entity<CourseSchedule>()
                 .HasOne(cs => cs.Course)

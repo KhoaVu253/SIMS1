@@ -1,17 +1,17 @@
 @model SIMS.Models.Course
 @{
-    ViewData["Title"] = "Danh sách sinh viên";
+    ViewData["Title"] = "Student List";
 }
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
-            <h2><i class="bi bi-people"></i> Danh sách sinh viên</h2>
+            <h2><i class="bi bi-people"></i> Student List</h2>
             <p class="text-muted">@Model.CourseCode - @Model.CourseName</p>
         </div>
         <div class="col-auto">
             <a asp-action="MyCourses" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Quay lại
+                <i class="bi bi-arrow-left"></i> Back
             </a>
         </div>
     </div>
@@ -19,14 +19,14 @@
     <div class="card">
         <div class="card-header">
             <h5 class="mb-0">
-                Tổng số: @Model.Enrollments.Count sinh viên
+                Total: @Model.Enrollments.Count students
             </h5>
         </div>
         <div class="card-body">
             @if (!Model.Enrollments.Any())
             {
                 <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> Chưa có sinh viên đăng ký môn này.
+                    <i class="bi bi-info-circle"></i> No students enrolled in this course yet.
                 </div>
             }
             else
@@ -36,11 +36,11 @@
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>Mã SV</th>
-                                <th>Họ và tên</th>
+                                <th>Student ID</th>
+                                <th>Full Name</th>
                                 <th>Email</th>
-                                <th>Lớp</th>
-                                <th>Ngày đăng ký</th>
+                                <th>Class</th>
+                                <th>Enrollment Date</th>
                             </tr>
                         </thead>
                         <tbody>

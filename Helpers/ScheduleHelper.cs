@@ -10,55 +10,55 @@ namespace SIMS.Helpers
         // =============================================
 
         /// <summary>
-        /// Chuyển số thành tên thứ đầy đủ
+        /// Convert number to full day name
         /// </summary>
         public static string GetDayName(int dayOfWeek)
         {
             return dayOfWeek switch
             {
-                2 => "Thứ hai",
-                3 => "Thứ ba",
-                4 => "Thứ tư",
-                5 => "Thứ năm",
-                6 => "Thứ sáu",
-                7 => "Thứ bảy",
-                8 => "Chủ nhật",
-                _ => "Không xác định"
+                2 => "Monday",
+                3 => "Tuesday",
+                4 => "Wednesday",
+                5 => "Thursday",
+                6 => "Friday",
+                7 => "Saturday",
+                8 => "Sunday",
+                _ => "Unknown"
             };
         }
 
         /// <summary>
-        /// Chuyển số thành tên thứ viết tắt
+        /// Convert number to abbreviated day name
         /// </summary>
         public static string GetDayAbbreviation(int dayOfWeek)
         {
             return dayOfWeek switch
             {
-                2 => "T2",
-                3 => "T3",
-                4 => "T4",
-                5 => "T5",
-                6 => "T6",
-                7 => "T7",
-                8 => "CN",
+                2 => "Mon",
+                3 => "Tue",
+                4 => "Wed",
+                5 => "Thu",
+                6 => "Fri",
+                7 => "Sat",
+                8 => "Sun",
                 _ => "?"
             };
         }
 
         /// <summary>
-        /// Lấy danh sách tất cả các thứ
+        /// Get list of all days
         /// </summary>
         public static List<(int Value, string Name)> GetAllDays()
         {
             return new List<(int, string)>
             {
-                (2, "Thứ hai"),
-                (3, "Thứ ba"),
-                (4, "Thứ tư"),
-                (5, "Thứ năm"),
-                (6, "Thứ sáu"),
-                (7, "Thứ bảy"),
-                (8, "Chủ nhật")
+                (2, "Monday"),
+                (3, "Tuesday"),
+                (4, "Wednesday"),
+                (5, "Thursday"),
+                (6, "Friday"),
+                (7, "Saturday"),
+                (8, "Sunday")
             };
         }
 
@@ -67,7 +67,7 @@ namespace SIMS.Helpers
         // =============================================
 
         /// <summary>
-        /// Lấy giờ bắt đầu của tiết học
+        /// Get start time of period
         /// </summary>
         public static string GetPeriodStartTime(int period)
         {
@@ -90,7 +90,7 @@ namespace SIMS.Helpers
         }
 
         /// <summary>
-        /// Lấy giờ kết thúc của tiết học
+        /// Get end time of period
         /// </summary>
         public static string GetPeriodEndTime(int period)
         {
@@ -113,7 +113,7 @@ namespace SIMS.Helpers
         }
 
         /// <summary>
-        /// Lấy khoảng thời gian học (VD: "07:00 - 09:30")
+        /// Get time range (e.g., "07:00 - 09:30")
         /// </summary>
         public static string GetTimeRange(int startPeriod, int endPeriod)
         {
@@ -121,17 +121,17 @@ namespace SIMS.Helpers
         }
 
         /// <summary>
-        /// Lấy khoảng tiết học (VD: "Tiết 1-3")
+        /// Get period range (e.g., "Period 1-3")
         /// </summary>
         public static string GetPeriodRange(int startPeriod, int endPeriod)
         {
             if (startPeriod == endPeriod)
-                return $"Tiết {startPeriod}";
-            return $"Tiết {startPeriod}-{endPeriod}";
+                return $"Period {startPeriod}";
+            return $"Period {startPeriod}-{endPeriod}";
         }
 
         /// <summary>
-        /// Lấy danh sách tất cả các tiết
+        /// Get list of all periods
         /// </summary>
         public static List<int> GetAllPeriods()
         {
@@ -143,15 +143,15 @@ namespace SIMS.Helpers
         // =============================================
 
         /// <summary>
-        /// Phân loại buổi học (Sáng/Chiều)
+        /// Classify session type (Morning/Afternoon)
         /// </summary>
         public static string GetSessionType(int startPeriod)
         {
-            return startPeriod <= 6 ? "Sáng" : "Chiều";
+            return startPeriod <= 6 ? "Morning" : "Afternoon";
         }
 
         /// <summary>
-        /// Lấy CSS class màu sắc cho buổi học
+        /// Get CSS color class for session
         /// </summary>
         public static string GetSessionColorClass(int startPeriod)
         {
@@ -159,7 +159,7 @@ namespace SIMS.Helpers
         }
 
         /// <summary>
-        /// Lấy màu badge cho buổi học
+        /// Get badge color class for session
         /// </summary>
         public static string GetSessionBadgeClass(int startPeriod)
         {
@@ -171,23 +171,23 @@ namespace SIMS.Helpers
         // =============================================
 
         /// <summary>
-        /// Kiểm tra 2 lịch có trùng thời gian không
+        /// Check if two schedules have time conflict
         /// </summary>
         public static bool IsTimeConflict(
             int day1, int start1, int end1,
             int day2, int start2, int end2)
         {
-            // Khác ngày thì không trùng
+            // Different days = no conflict
             if (day1 != day2) return false;
 
-            // Kiểm tra trùng tiết
-            // Không trùng nếu: lịch 1 kết thúc trước khi lịch 2 bắt đầu
-            // hoặc lịch 1 bắt đầu sau khi lịch 2 kết thúc
+            // Check period overlap
+            // No conflict if: schedule 1 ends before schedule 2 starts
+            // or schedule 1 starts after schedule 2 ends
             return !(end1 < start2 || start1 > end2);
         }
 
         /// <summary>
-        /// Tính số tiết học
+        /// Calculate number of periods
         /// </summary>
         public static int GetPeriodCount(int startPeriod, int endPeriod)
         {
@@ -199,27 +199,27 @@ namespace SIMS.Helpers
         // =============================================
 
         /// <summary>
-        /// Validate lịch học
+        /// Validate schedule
         /// </summary>
         public static List<string> ValidateSchedule(int dayOfWeek, int startPeriod, int endPeriod)
         {
             var errors = new List<string>();
 
             if (dayOfWeek < 2 || dayOfWeek > 8)
-                errors.Add("Thứ phải từ 2 (Thứ hai) đến 8 (Chủ nhật)");
+                errors.Add("Day of week must be between 2 (Monday) and 8 (Sunday)");
 
             if (startPeriod < 1 || startPeriod > 12)
-                errors.Add("Tiết bắt đầu phải từ 1 đến 12");
+                errors.Add("Start period must be between 1 and 12");
 
             if (endPeriod < 1 || endPeriod > 12)
-                errors.Add("Tiết kết thúc phải từ 1 đến 12");
+                errors.Add("End period must be between 1 and 12");
 
             if (endPeriod < startPeriod)
-                errors.Add("Tiết kết thúc phải lớn hơn hoặc bằng tiết bắt đầu");
+                errors.Add("End period must be greater than or equal to start period");
 
-            // Không nên học quá 5 tiết liên tục
+            // Should not exceed 5 consecutive periods
             if (endPeriod - startPeriod + 1 > 5)
-                errors.Add("Không nên sắp xếp quá 5 tiết học liên tục");
+                errors.Add("Should not schedule more than 5 consecutive periods");
 
             return errors;
         }
@@ -229,7 +229,7 @@ namespace SIMS.Helpers
         // =============================================
 
         /// <summary>
-        /// Format thông tin lịch học ngắn gọn
+        /// Format schedule info briefly
         /// </summary>
         public static string GetScheduleSummary(int dayOfWeek, int startPeriod, int endPeriod, string room)
         {
@@ -237,7 +237,7 @@ namespace SIMS.Helpers
         }
 
         /// <summary>
-        /// Lấy icon cho buổi học
+        /// Get icon for session
         /// </summary>
         public static string GetSessionIcon(int startPeriod)
         {

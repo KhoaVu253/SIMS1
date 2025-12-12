@@ -1,12 +1,12 @@
 @model SIMS.Models.ViewModels.FacultyFormViewModel
 @{
-    ViewData["Title"] = "Chỉnh sửa giảng viên";
+    ViewData["Title"] = "Edit Faculty";
 }
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
-            <h2><i class="bi bi-pencil"></i> Chỉnh sửa giảng viên</h2>
+            <h2><i class="bi bi-pencil"></i> Edit Faculty</h2>
         </div>
     </div>
 
@@ -44,10 +44,10 @@
                     <div class="col-md-6">
                         <label asp-for="Department" class="form-label">
                             <i class="bi bi-building me-1"></i>
-                            Khoa
+                            Department
                         </label>
                         <select asp-for="Department" class="form-select">
-                            <option value="">-- Chọn khoa --</option>
+                            <option value="">-- Select Department --</option>
                             @foreach (var dept in ViewBag.Departments as string[])
                             {
                                 <option value="@dept">@dept</option>
@@ -59,7 +59,7 @@
                     <div class="col-md-6">
                         <label asp-for="Password" class="form-label"></label>
                         <input asp-for="Password" type="password" class="form-control" 
-                               placeholder="Để trống nếu không muốn đổi mật khẩu" />
+                               placeholder="Leave empty if you don't want to change password" />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
@@ -73,10 +73,10 @@
                     <div class="col-12">
                         <hr />
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Cập nhật
+                            <i class="bi bi-save"></i> Update
                         </button>
                         <a asp-action="Faculties" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Hủy
+                            <i class="bi bi-x-circle"></i> Cancel
                         </a>
                     </div>
                 </div>

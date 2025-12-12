@@ -1,12 +1,12 @@
 @model SIMS.Models.ViewModels.FacultyFormViewModel
 @{
-    ViewData["Title"] = "Thêm giảng viên";
+    ViewData["Title"] = "Add Faculty";
 }
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
-            <h2><i class="bi bi-person-plus-fill"></i> Thêm giảng viên</h2>
+            <h2><i class="bi bi-person-plus-fill"></i> Add Faculty</h2>
         </div>
     </div>
 
@@ -43,10 +43,10 @@
                     <div class="col-md-6">
                         <label asp-for="Department" class="form-label">
                             <i class="bi bi-building me-1"></i>
-                            Khoa
+                            Department
                         </label>
                         <select asp-for="Department" class="form-select">
-                            <option value="">-- Chọn khoa --</option>
+                            <option value="">-- Select Department --</option>
                             @foreach (var dept in ViewBag.Departments as string[])
                             {
                                 <option value="@dept">@dept</option>
@@ -58,7 +58,7 @@
                     <div class="col-md-6">
                         <label asp-for="Password" class="form-label"></label>
                         <input asp-for="Password" type="password" class="form-control" 
-                               placeholder="Để trống sẽ dùng mật khẩu mặc định: 123456" />
+                               placeholder="Leave empty to use default password: 123456" />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
@@ -72,10 +72,10 @@
                     <div class="col-12">
                         <hr />
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Lưu
+                            <i class="bi bi-save"></i> Save
                         </button>
                         <a asp-action="Faculties" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Hủy
+                            <i class="bi bi-x-circle"></i> Cancel
                         </a>
                     </div>
                 </div>

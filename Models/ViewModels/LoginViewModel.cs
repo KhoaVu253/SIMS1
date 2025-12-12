@@ -4,16 +4,16 @@ namespace SIMS.Models.ViewModels
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "Tên đăng nhập là bắt buộc")]
-        [Display(Name = "Tên đăng nhập")]
+        [Required(ErrorMessage = "Username is required")]
+        [Display(Name = "Username")]
         public string Username { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Mật khẩu là bắt buộc")]
+        [Required(ErrorMessage = "Password is required")]
         [DataType(DataType.Password)]
-        [Display(Name = "Mật khẩu")]
+        [Display(Name = "Password")]
         public string Password { get; set; } = string.Empty;
 
-        [Display(Name = "Ghi nhớ đăng nhập")]
+        [Display(Name = "Remember Me")]
         public bool RememberMe { get; set; }
     }
 }

@@ -1,36 +1,36 @@
 @model IEnumerable<SIMS.Models.ViewModels.AccountManagementViewModel>
 @{
-    ViewData["Title"] = "Quản lý tài khoản";
+    ViewData["Title"] = "Account Management";
 }
 
 <div class="page-header">
     <h2>
         <i class="bi bi-person-lock"></i>
-        Quản lý tài khoản
+        Account Management
     </h2>
-    <p class="text-muted">Quản lý tài khoản đăng nhập của sinh viên và giảng viên</p>
+    <p class="text-muted">Manage login accounts for students and faculty</p>
 </div>
 
 <div class="card mb-4">
     <div class="card-body">
         <form method="get" class="row g-3">
             <div class="col-md-3">
-                <label class="form-label"><i class="bi bi-funnel me-1"></i> Vai trò</label>
+                <label class="form-label"><i class="bi bi-funnel me-1"></i> Role</label>
                 <select name="role" class="form-select" onchange="this.form.submit()">
-                    <option value="">Tất cả</option>
-                    <option value="Student" selected="@(ViewBag.Role == "Student")">Sinh viên</option>
-                    <option value="Faculty" selected="@(ViewBag.Role == "Faculty")">Giảng viên</option>
+                    <option value="">All</option>
+                    <option value="Student" selected="@(ViewBag.Role == "Student")">Student</option>
+                    <option value="Faculty" selected="@(ViewBag.Role == "Faculty")">Faculty</option>
                     <option value="Admin" selected="@(ViewBag.Role == "Admin")">Admin</option>
                 </select>
             </div>
             <div class="col-md-6">
-                <label class="form-label"><i class="bi bi-search me-1"></i> Tìm kiếm</label>
+                <label class="form-label"><i class="bi bi-search me-1"></i> Search</label>
                 <input type="text" name="searchString" class="form-control" 
-                       placeholder="Nhập tên đăng nhập..." value="@ViewBag.SearchString">
+                       placeholder="Enter username..." value="@ViewBag.SearchString">
             </div>
             <div class="col-md-3 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary me-2">
-                    <i class="bi bi-search"></i> Tìm
+                    <i class="bi bi-search"></i> Search
                 </button>
                 <a asp-action="ManageAccounts" class="btn btn-secondary">
                     <i class="bi bi-arrow-clockwise"></i> Reset
@@ -43,20 +43,20 @@
 <div class="card">
     <div class="card-header">
         <i class="bi bi-list-ul me-2"></i>
-        Danh sách tài khoản (@Model.Count())
+        Account List (@Model.Count())
     </div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>STT</th>
-                        <th><i class="bi bi-person me-1"></i> Tên đăng nhập</th>
-                        <th><i class="bi bi-person-badge me-1"></i> Họ tên</th>
+                        <th>No.</th>
+                        <th><i class="bi bi-person me-1"></i> Username</th>
+                        <th><i class="bi bi-person-badge me-1"></i> Full Name</th>
                         <th><i class="bi bi-envelope me-1"></i> Email</th>
-                        <th><i class="bi bi-shield me-1"></i> Vai trò</th>
-                        <th><i class="bi bi-toggle-on me-1"></i> Trạng thái</th>
-                        <th class="text-center"><i class="bi bi-gear me-1"></i> Thao tác</th>
+                        <th><i class="bi bi-shield me-1"></i> Role</th>
+                        <th><i class="bi bi-toggle-on me-1"></i> Status</th>
+                        <th class="text-center"><i class="bi bi-gear me-1"></i> Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,7 +65,7 @@
                         <tr>
                             <td colspan="7" class="text-center text-muted py-4">
                                 <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                                <p class="mb-0 mt-2">Không tìm thấy tài khoản nào</p>
+                                <p class="mb-0 mt-2">No accounts found</p>
                             </td>
                         </tr>
                     }
@@ -102,13 +102,13 @@
                                     else if (item.Role == "Faculty")
                                     {
                                         <span class="badge bg-primary">
-                                            <i class="bi bi-person-badge"></i> Giảng viên
+                                            <i class="bi bi-person-badge"></i> Faculty
                                         </span>
                                     }
                                     else
                                     {
                                         <span class="badge bg-info">
-                                            <i class="bi bi-person"></i> Sinh viên
+                                            <i class="bi bi-person"></i> Student
                                         </span>
                                     }
                                 </td>
@@ -116,13 +116,13 @@
                                     @if (item.IsActive)
                                     {
                                         <span class="badge bg-success">
-                                            <i class="bi bi-check-circle"></i> Hoạt động
+                                            <i class="bi bi-check-circle"></i> Active
                                         </span>
                                     }
                                     else
                                     {
                                         <span class="badge bg-secondary">
-                                            <i class="bi bi-x-circle"></i> Đã khóa
+                                            <i class="bi bi-x-circle"></i> Locked
                                         </span>
                                     }
                                 </td>
@@ -131,25 +131,25 @@
                                     {
                                         <div class="btn-group btn-group-sm" role="group">
                                             <a asp-action="ResetPassword" asp-route-id="@item.UserId" 
-                                               class="btn btn-outline-primary" title="Đổi mật khẩu">
+                                               class="btn btn-outline-primary" title="Reset Password">
                                                 <i class="bi bi-key"></i>
                                             </a>
                                             
                                             <form asp-action="ResetPasswordToDefault" asp-route-id="@item.UserId" 
                                                   method="post" class="d-inline"
-                                                  onsubmit="return confirm('Reset mật khẩu về 123456?');">
+                                                  onsubmit="return confirm('Reset password to 123456?');">
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-outline-warning" title="Reset về mặc định">
+                                                <button type="submit" class="btn btn-outline-warning" title="Reset to Default">
                                                     <i class="bi bi-arrow-counterclockwise"></i>
                                                 </button>
                                             </form>
                                             
                                             <form asp-action="ToggleAccountStatus" asp-route-id="@item.UserId" 
                                                   method="post" class="d-inline"
-                                                  onsubmit="return confirm('@(item.IsActive ? "Khóa" : "Mở khóa") tài khoản này?');">
+                                                  onsubmit="return confirm('@(item.IsActive ? "Lock" : "Unlock") this account?');">
                                                 @Html.AntiForgeryToken()
                                                 <button type="submit" class="btn btn-outline-@(item.IsActive ? "danger" : "success")" 
-                                                        title="@(item.IsActive ? "Khóa" : "Mở khóa") tài khoản">
+                                                        title="@(item.IsActive ? "Lock" : "Unlock") Account">
                                                     <i class="bi bi-@(item.IsActive ? "lock" : "unlock")"></i>
                                                 </button>
                                             </form>
@@ -173,14 +173,14 @@
 <div class="card mt-4">
     <div class="card-header bg-warning text-dark">
         <i class="bi bi-info-circle me-2"></i>
-        Hướng dẫn
+        Guidelines
     </div>
     <div class="card-body">
         <ul class="mb-0">
-            <li><strong><i class="bi bi-key text-primary"></i> Đổi mật khẩu:</strong> Đặt mật khẩu mới cho tài khoản</li>
-            <li><strong><i class="bi bi-arrow-counterclockwise text-warning"></i> Reset mặc định:</strong> Reset mật khẩu về <code>123456</code></li>
-            <li><strong><i class="bi bi-lock text-danger"></i> Khóa/Mở:</strong> Khóa hoặc mở khóa tài khoản đăng nhập</li>
-            <li class="text-muted mt-2"><i class="bi bi-lightbulb"></i> <em>Lưu ý: Tài khoản Admin không thể quản lý từ trang này</em></li>
+            <li><strong><i class="bi bi-key text-primary"></i> Reset Password:</strong> Set a new password for the account</li>
+            <li><strong><i class="bi bi-arrow-counterclockwise text-warning"></i> Reset to Default:</strong> Reset password to <code>123456</code></li>
+            <li><strong><i class="bi bi-lock text-danger"></i> Lock/Unlock:</strong> Lock or unlock the login account</li>
+            <li class="text-muted mt-2"><i class="bi bi-lightbulb"></i> <em>Note: Admin accounts cannot be managed from this page</em></li>
         </ul>
     </div>
 </div>

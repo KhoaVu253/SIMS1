@@ -1,14 +1,14 @@
 @model IEnumerable<SIMS.Models.Enrollment>
 @{
-    ViewData["Title"] = "Xem điểm";
+    ViewData["Title"] = "My Grades";
 }
 
 <div class="page-header">
     <h2>
         <i class="bi bi-trophy"></i>
-        Bảng điểm
+        Grades
     </h2>
-    <p class="text-muted">Xem điểm các môn học đã hoàn thành</p>
+    <p class="text-muted">View grades of completed courses</p>
 </div>
 
 <div class="card mb-4">
@@ -17,10 +17,10 @@
             <div class="col-md-4">
                 <label class="form-label">
                     <i class="bi bi-calendar3 me-1"></i>
-                    Lọc theo học kỳ
+                    Filter by Semester
                 </label>
                 <select name="semester" class="form-select" onchange="this.form.submit()">
-                    <option value="">-- Tất cả học kỳ --</option>
+                    <option value="">-- All Semesters --</option>
                     @foreach (var sem in ViewBag.Semesters as string[])
                     {
                         <option value="@sem" selected="@(ViewBag.Semester == sem)">@sem</option>
@@ -29,7 +29,7 @@
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search"></i> Xem điểm
+                    <i class="bi bi-search"></i> View Grades
                 </button>
             </div>
         </form>
@@ -47,9 +47,9 @@
     <div class="card">
         <div class="card-body text-center py-5">
             <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
-            <h4 class="mt-3 text-muted">Chưa có dữ liệu</h4>
+            <h4 class="mt-3 text-muted">No Data</h4>
             <p class="text-muted">
-                Bạn chưa được phân công vào môn học nào hoặc chưa có điểm.
+                You have not been assigned to any courses or have no grades yet.
             </p>
         </div>
     </div>
@@ -60,21 +60,23 @@
     <div class="card mb-4">
         <div class="card-header">
             <i class="bi bi-calendar3 me-2"></i>
-            @group.Key.Semester - Năm học @group.Key.AcademicYear
+            @group.Key.Semester - Academic Year @group.Key.AcademicYear
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>STT</th>
-                            <th><i class="bi bi-book me-1"></i> Mã môn</th>
-                            <th>Tên môn học</th>
-                            <th class="text-center"><i class="bi bi-award me-1"></i> Tín chỉ</th>
-                            <th class="text-center">Giữa kỳ</th>
-                            <th class="text-center">Cuối kỳ</th>
-                            <th class="text-center">Điểm TB</th>
-                            <th class="text-center">Xếp loại</th>
+                            <th>No.</th>
+                            <th><i class="bi bi-book me-1"></i> Course Code</th>
+                            <th>Course Name</th>
+                            <th class="text-center"><i class="bi bi-award me-1"></i> Credits</th>
+                            <th class="text-center">Midterm</th>
+                            <th class="text-center">Final</th>
+                            <th class="text-center">Average</th>
+                            <th class="text-center">Grade</th>
+                            <th class="text-center">✅ Status</th>
+                            <th class="text-center">✅ Retake</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -82,10 +84,22 @@
                             int stt = 1;
                             foreach (var enrollment in group.OrderBy(e => e.Course.CourseCode))
                             {
-                                <tr>
+                                // ✅ Highlight row if failed
+                                var rowClass = enrollment.IsFailed ? "table-danger" : "";
+                                
+                                <tr class="@rowClass">
                                     <td>@stt</td>
                                     <td><strong class="text-navy">@enrollment.Course.CourseCode</strong></td>
-                                    <td>@enrollment.Course.CourseName</td>
+                                    <td>
+                                        @enrollment.Course.CourseName
+                                        @* ✅ Show retake indicator *@
+                                        @if (enrollment.IsRetaking)
+                                        {
+                                            <span class="badge bg-warning ms-2">
+                                                <i class="bi bi-arrow-repeat"></i> Retake #@enrollment.RetakeCount
+                                            </span>
+                                        }
+                                    </td>
                                     <td class="text-center">
                                         <span class="badge bg-info">@enrollment.Course.Credits</span>
                                     </td>
@@ -112,7 +126,11 @@
                                     <td class="text-center">
                                         @if (enrollment.AverageScore.HasValue)
                                         {
-                                            <strong class="text-success">@enrollment.AverageScore.Value.ToString("F2")</strong>
+                                            // ✅ Red if failed
+                                            var scoreClass = enrollment.AverageScore.Value < 5.0f ? "text-danger" : "text-success";
+                                            <strong class="@scoreClass">
+                                                @enrollment.AverageScore.Value.ToString("F2")
+                                            </strong>
                                         }
                                         else
                                         {
@@ -133,6 +151,61 @@
                                             <span class="text-muted">-</span>
                                         }
                                     </td>
+                                    @* ✅ NEW: Status column *@
+                                    <td class="text-center">
+                                        @if (enrollment.Status == "Completed")
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle-fill"></i> Passed
+                                            </span>
+                                        }
+                                        else if (enrollment.Status == "Failed")
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle-fill"></i> Failed
+                                            </span>
+                                        }
+                                        else if (enrollment.Status == "Retaking")
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-arrow-repeat"></i> Retaking
+                                            </span>
+                                        }
+                                        else if (enrollment.Status == "Active")
+                                        {
+                                            <span class="badge bg-info">
+                                                <i class="bi bi-hourglass-split"></i> Studying
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@enrollment.Status</span>
+                                        }
+                                    </td>
+                                    @* ✅ NEW: Retake action column *@
+                                    <td class="text-center">
+                                        @if (enrollment.Status == "Failed")
+                                        {
+                                            <a asp-controller="Student" 
+                                               asp-action="RetakeCourse" 
+                                               asp-route-enrollmentId="@enrollment.Id"
+                                               class="btn btn-sm btn-warning"
+                                               title="Register for Retake"
+                                               onclick="return confirm('Do you want to register for retaking this course?')">
+                                                <i class="bi bi-arrow-repeat"></i> Retake
+                                            </a>
+                                        }
+                                        else if (enrollment.IsRetaking)
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-hourglass-split"></i> Retaking
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
                                 </tr>
                                 stt++;
                             }
@@ -140,9 +213,9 @@
                     </tbody>
                     <tfoot class="table-light">
                         <tr>
-                            <td colspan="3"><strong>Tổng học kỳ:</strong></td>
+                            <td colspan="3"><strong>Semester Total:</strong></td>
                             <td class="text-center">
-                                <strong>@group.Sum(e => e.Course.Credits) TC</strong>
+                                <strong>@group.Sum(e => e.Course.Credits) Credits</strong>
                             </td>
                             <td colspan="2"></td>
                             <td class="text-center">
@@ -159,7 +232,7 @@
                                     }
                                 }
                             </td>
-                            <td></td>
+                            <td colspan="3"></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -172,31 +245,52 @@
 {
     var allGrades = Model.Where(e => e.AverageScore.HasValue)
                         .Select(e => e.AverageScore!.Value);
+    var failedCount = Model.Count(e => e.Status == "Failed");
+    var retakingCount = Model.Count(e => e.Status == "Retaking");
+    
     if (allGrades.Any())
     {
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="stat-card stat-card-gold">
+            <div class="col-md-3">
+                <div class="stat-card stat-card-primary">
                     <i class="bi bi-trophy-fill icon"></i>
-                    <h6>GPA tích lũy</h6>
+                    <h6>Cumulative GPA</h6>
                     <h2>@allGrades.Average().ToString("F2")</h2>
-                    <small class="text-white d-block mt-2">Điểm trung bình</small>
+                    <small class="text-white d-block mt-2">Average Score</small>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card stat-card-blue">
+            <div class="col-md-3">
+                <div class="stat-card stat-card-info">
                     <i class="bi bi-award-fill icon"></i>
-                    <h6>Tổng tín chỉ</h6>
+                    <h6>Total Credits</h6>
                     <h2>@Model.Sum(e => e.Course.Credits)</h2>
-                    <small class="text-white d-block mt-2">Đã đăng ký</small>
+                    <small class="text-white d-block mt-2">Enrolled</small>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card stat-card-green">
+            <div class="col-md-3">
+                <div class="stat-card stat-card-success">
                     <i class="bi bi-check-circle-fill icon"></i>
-                    <h6>Môn hoàn thành</h6>
-                    <h2>@Model.Count(e => e.AverageScore.HasValue)</h2>
-                    <small class="text-white d-block mt-2">Đã có điểm</small>
+                    <h6>Passed Courses</h6>
+                    <h2>@Model.Count(e => e.Status == "Completed")</h2>
+                    <small class="text-white d-block mt-2">Completed</small>
+                </div>
+            </div>
+            @* ✅ NEW: Failed courses stat *@
+            <div class="col-md-3">
+                <div class="stat-card stat-card-danger">
+                    <i class="bi bi-x-circle-fill icon"></i>
+                    <h6>Failed Courses</h6>
+                    <h2>@failedCount</h2>
+                    <small class="text-white d-block mt-2">
+                        @if (retakingCount > 0)
+                        {
+                            <span>(@retakingCount retaking)</span>
+                        }
+                        else
+                        {
+                            <span>Need Retake</span>
+                        }
+                    </small>
                 </div>
             </div>
         </div>

@@ -43,7 +43,7 @@ namespace SIMS.Controllers
 
             if (user == null)
             {
-                ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng");
+                ModelState.AddModelError("", "Invalid username or password");
                 return View(model);
             }
 
